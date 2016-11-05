@@ -1,3 +1,3 @@
 # ski_resort
 
-## very design, so server, much amaze
+# very design, so server, much amaze
