@@ -10,6 +10,7 @@ import sys
 import websockets
 import requests
 
+
 class LiftType(enum.Enum):
     small = 1
     medium = 2
@@ -37,9 +38,8 @@ class Lift:
         self.last_sim_time = 0
         self.type = type
         self.event_rate = {
-            "failure": 1,
-            "add_people": 75,
-            "nothing": 5000
+            "failure": 0.05,
+            "add_people": 1.5
         }
         self.running = False
         self.exit = False
@@ -77,10 +77,7 @@ class Lift:
     def handle_command(self, command):
         list_of_commands = ["speed", "change_speed", "resource", "increased_pop", "decreased_pop", "customer", "report",
                             "online", "offline", "exit"]
-        try:
-            c, arg, *e = command.lower().split(" ")
-        except ValueError as e:
-            c = command
+        c, arg = (command["command"], command["arg"])
 
         if c not in list_of_commands:
             logging.error("Unknown command {}".format(command))
@@ -111,6 +108,7 @@ class Lift:
     def create_report(self):
         rep = {
             "id": self.id,
+            "name": self.name,
             "type": self.type.name,
             "speed": self.speed,
             "customers": self.queue,
@@ -132,6 +130,8 @@ class Lift:
             self.speed = new_speed
         else:
             self.speed = self.MAX_SPEED[self.type]
+        if self.speed < 0:
+            self.speed = 0
 
         self.consumption = self.calculate_consumption(self.speed, self.type)
 
@@ -144,11 +144,17 @@ class Lift:
     def enviromental_happening(self):
 
         l = []
+        denom = 1.0 / min(self.event_rate.values())
+        total = sum(self.event_rate.values())
         for key in self.event_rate:
-            l += [key] * self.event_rate[key]
+            l += [key] * int(self.event_rate[key] * 20)
+        if total < 100:
+            l += ["nothing"] * int((100 - total) * 20)
 
         c = random.choice(l)
+
         if c == "failure":
+            print("Server has unexpectedly stopped, what could have happened? :O Somebody needs to set it online.")
             self.running = False
         elif c == "add_people":
             self.queue += random.randint(0, 5)
@@ -163,7 +169,7 @@ class Lift:
         elif lift_type == LiftType.large:
             return base_consumption + pow(speed, 1.3)
         else:
-            return base_consumption + pow(speed, 1.4)
+            return base_consumption + pow(speed, 1.35)
 
     class WebSocketManager:
         def __init__(self, hostname, port, input: multiprocessing.SimpleQueue, output: multiprocessing.SimpleQueue):
@@ -199,14 +205,16 @@ class Lift:
                     async with websockets.connect("ws://{}:{}".format(self.hostname, self.port)) as websocket:
 
                         data = await websocket.recv()
-                        a = []
-                        while not data == "close" and not self.exit:
-                            self.input.put(data)
-                            if data == "report":
+                        command = json.loads(data)
+                        while not command["command"] == "close" and not self.exit:
+                            self.input.put(command)
+                            if command["command"] == "report":
                                 # while self.output.empty():
                                 #     time.sleep(0.05)
                                 await websocket.send(self.output.get())
                             data = await websocket.recv()
+                            command = json.loads(data)
+
                 except Exception as e:
                     logging.error("Connection lost to server. Retrying...")
                     # print(a)
@@ -214,7 +222,6 @@ class Lift:
 
 def create_lift(web_url):
     rsp = requests.get(web_url)
-
 
 
 def main():
