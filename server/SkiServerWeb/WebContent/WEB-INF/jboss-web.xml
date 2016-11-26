@@ -1,0 +1,3 @@
+<jboss-web>
+  <context-root>SkiServerWeb</context-root>
+</jboss-web>

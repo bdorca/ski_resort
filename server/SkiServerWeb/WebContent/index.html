@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="websocket.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+
+        <div id="wrapper">
+            <h1>Java Websocket Home</h1>
+            <p>Welcome to the Java WebSocket Home. Click the Add a lift button to start adding lifts.</p>
+            <br />
+            <div id="addLift">
+                <div class="button"> <a href="#" OnClick="showForm()">Send lift data</a> </div>
+                <form id="addLiftForm">
+                    <h3>Send Lift data</h3>
+                    <span>Name: <input type="text" name="lift_name" id="lift_name"></span>
+                    <span>Type: 
+                        <select id="lift_type">
+                            <option name="type" value="Csakanyos">Csakanyos</option>
+                            <option name="type" value="Tarcsas">Tarcsas</option>
+                            <option name="type" value="Ulos">Ulos</option>
+                            <option name="type" value="Kabinos">Kabinos</option>
+                        </select></span>
+
+                    <input type="button" class="button" value="Add" onclick=formSubmit()>
+                    <input type="reset" class="button" value="Cancel" onclick=hideForm()>
+                </form>
+            </div>
+            <br />
+            <h3>Currently connected lifts:</h3>
+            <div id="content">
+            </div>
+        </div>
+
+    </body>
+</html>
