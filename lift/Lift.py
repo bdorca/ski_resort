@@ -8,7 +8,7 @@ import logging
 import multiprocessing
 import sys
 import websockets
-
+import requests
 
 class LiftType(enum.Enum):
     small = 1
@@ -24,15 +24,16 @@ class Lift:
                  LiftType.extra_large: 120
                  }
 
-    def __init__(self, type):
+    def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, consumption=0):
         self.input = multiprocessing.SimpleQueue()
         self.output = multiprocessing.SimpleQueue()
-        self.id = ""
-        self.queue = 0
-        self.speed = 0  # People/min
+        self.id = my_id
+        self.name = name
+        self.queue = queue
+        self.speed = speed  # People/min
         self.current_transition = 0
-        self.resource = 0  # Fixed amount that the system can provide
-        self.consumption = 0  # Fixed amount, that the lift requires to maintain speed
+        self.resource = resource  # Fixed amount that the system can provide
+        self.consumption = consumption  # Fixed amount, that the lift requires to maintain speed
         self.last_sim_time = 0
         self.type = type
         self.event_rate = {
@@ -40,6 +41,7 @@ class Lift:
             "add_people": 75,
             "nothing": 5000
         }
+        self.running = False
         self.exit = False
         self.websocket_handler = Lift.WebSocketManager("localhost", 8085, self.input, self.output)
         p = multiprocessing.Process(target=self.websocket_handler.start)
@@ -47,18 +49,19 @@ class Lift:
 
     def simulation(self):
         self.last_sim_time = time.time()
+        self.running = True
         while not self.exit:
+            if self.running:
+                if not self.input.empty():
+                    while not self.input.empty():
+                        self.handle_command(self.input.get())
 
-            if not self.input.empty():
-                while not self.input.empty():
-                    self.handle_command(self.input.get())
-
-            t = time.time() - self.last_sim_time
-            self.last_sim_time = time.time()
-            if self.queue > 0:
-                self.simulate(t)
-            self.enviromental_happening()
-            time.sleep(0.05)
+                t = time.time() - self.last_sim_time
+                self.last_sim_time = time.time()
+                if self.queue > 0:
+                    self.simulate(t)
+                self.enviromental_happening()
+                time.sleep(0.05)
 
     def simulate(self, t):
         if self.resource >= self.consumption:
@@ -72,7 +75,8 @@ class Lift:
             self.find_lowest_available_speed()
 
     def handle_command(self, command):
-        list_of_commands = ["speed", "change_speed", "resource","increased_pop","decreased_pop", "customer", "report", "exit"]
+        list_of_commands = ["speed", "change_speed", "resource", "increased_pop", "decreased_pop", "customer", "report",
+                            "online", "offline", "exit"]
         try:
             c, arg, *e = command.lower().split(" ")
         except ValueError as e:
@@ -99,6 +103,10 @@ class Lift:
             elif c == "decreased_pop":
                 new_rate = self.event_rate["add_people"] - int(arg)
                 self.event_rate["add_people"] = new_rate if new_rate >= 0 else 0
+            elif c == "online":
+                self.running = True
+            elif c == "offline":
+                self.running = False
 
     def create_report(self):
         rep = {
@@ -141,7 +149,7 @@ class Lift:
 
         c = random.choice(l)
         if c == "failure":
-            pass
+            self.running = False
         elif c == "add_people":
             self.queue += random.randint(0, 5)
 
@@ -149,11 +157,11 @@ class Lift:
     def calculate_consumption(speed, lift_type):
         base_consumption = 30  # kW/h/min
         if lift_type == LiftType.small:
-            return base_consumption+pow(speed, 1.1)
+            return base_consumption + pow(speed, 1.1)
         elif lift_type == LiftType.medium:
-            return base_consumption+pow(speed, 1.2)
+            return base_consumption + pow(speed, 1.2)
         elif lift_type == LiftType.large:
-            return base_consumption+pow(speed, 1.3)
+            return base_consumption + pow(speed, 1.3)
         else:
             return base_consumption + pow(speed, 1.4)
 
@@ -201,7 +209,12 @@ class Lift:
                             data = await websocket.recv()
                 except Exception as e:
                     logging.error("Connection lost to server. Retrying...")
-                        # print(a)
+                    # print(a)
+
+
+def create_lift(web_url):
+    rsp = requests.get(web_url)
+
 
 
 def main():
