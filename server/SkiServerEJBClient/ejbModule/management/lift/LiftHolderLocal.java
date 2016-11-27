@@ -13,5 +13,7 @@ public interface LiftHolderLocal {
 	List<LiftModel> getLifts() throws LiftException;
 	void setLift(LiftModel liftModel) throws LiftException;
 	void addNewLift(String liftId);
-	void setLiftData(String liftId, String name, int size);
+	void setLiftData(String liftId, LiftModel l);
+	void sendCommand(String liftId, Command cmd, float arg) throws LiftException;
+	void sendCommand(String liftId, Command name, String arg) throws LiftException;
 }

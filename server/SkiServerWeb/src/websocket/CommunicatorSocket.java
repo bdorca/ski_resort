@@ -4,10 +4,14 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.websocket.OnClose;
@@ -15,21 +19,18 @@ import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
-import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import javax.json.Json;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 
+import management.lift.Command;
+import management.lift.Events;
 import management.lift.LiftHolderLocal;
+import management.lift.LiftModel;
 import management.lift.LiftType;
 
 /**
  * Session Bean implementation class CommunicatorSocket
  */
-@ServerEndpoint("/lift/{liftId}")
+@ServerEndpoint("/lift")
 @Stateless
 @LocalBean
 public class CommunicatorSocket implements CommunicatorSocketRemote, CommunicatorSocketLocal {
@@ -60,9 +61,12 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 	}
 
 	@OnOpen
-	public void onOpen(Session session, @PathParam("liftId") String liftId) {
+	public void onOpen(Session session) {
+		String liftId = UUID.randomUUID().toString();
 		availableSessions.put(session, liftId);
 		liftHolder.addNewLift(liftId);
+		sendCommandToLiftId(liftId, Command.id, liftId);
+		sendCommandToLiftId(liftId, Command.report, "");
 		System.out.println("new session, lift: " + liftId);
 	}
 
@@ -93,8 +97,8 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			return;
 		}
 		switch (messageType) {
-		case "add":
-			addNewLift(liftId, jObject);
+		case "report":
+			addNewLift(liftId, jObject.getJsonObject("data"));
 			break;
 		default:
 			sendMessageToSession(session, "Unexpected operation: " + messageType);
@@ -107,15 +111,22 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 		try {
 			String name = data.getString("name");
 			String type = data.getString("type");
-			int size = LiftType.valueOf(type).ordinal();
-			liftHolder.setLiftData(liftId, name, size);
+			LiftType size = LiftType.valueOf(type);
+			float speed = (float) (data.getJsonNumber("speed")).doubleValue();
+			float customers = (float) (data.getJsonNumber("customers")).doubleValue();
+			float resource = (float) (data.getJsonNumber("resource")).doubleValue();
+			float consumption = (float) (data.getJsonNumber("speed")).doubleValue();
+			JsonObject eventsObject = data.getJsonObject("events");
+			Events events = new Events((float) eventsObject.getJsonNumber("failure").doubleValue(),
+					(float) eventsObject.getJsonNumber("add_people").doubleValue());
+			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events);
+			liftHolder.setLiftData(liftId, l);
 		} catch (ClassCastException | NullPointerException e) {
 			e.printStackTrace();
 			sendErrorToSession(getSessionbyId(liftId), "json has bad type");
 		}
 	}
 
-	@Override
 	public void sendMessageToId(String id, String msg) {
 		sendMessageToSession(getSessionbyId(id), msg);
 	}
@@ -138,5 +149,11 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			}
 		}
 		return s;
+	}
+
+	@Override
+	public void sendCommandToLiftId(String liftId, Command command, String argument) {
+		JsonObject jo = Json.createObjectBuilder().add("command", command.toString()).add("arg", argument).build();
+		sendMessageToId(liftId, jo.toString());
 	}
 }

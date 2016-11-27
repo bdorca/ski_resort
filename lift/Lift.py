@@ -43,7 +43,7 @@ class Lift:
         }
         self.running = False
         self.exit = False
-        self.websocket_handler = Lift.WebSocketManager("localhost", 8085, self.input, self.output)
+        self.websocket_handler = Lift.WebSocketManager("localhost", 8080, "SkiServerWeb/lift", self.input, self.output)
         p = multiprocessing.Process(target=self.websocket_handler.start)
         p.start()
 
@@ -76,16 +76,16 @@ class Lift:
 
     def handle_command(self, command):
         list_of_commands = ["speed", "change_speed", "resource", "increased_pop", "decreased_pop", "customer", "report",
-                            "online", "offline", "exit"]
+                            "online", "offline", "exit", "id", "name"]
         c, arg = (command["command"], command["arg"])
 
         if c not in list_of_commands:
             logging.error("Unknown command {}".format(command))
         else:
             if c == "speed":
-                self.change_speed(int(arg))
+                self.change_speed(float(arg))
             elif c == "change_speed":
-                self.change_speed(int(arg), False)
+                self.change_speed(float(arg), False)
             elif c == "customer":
                 self.add_people(int(arg))
             elif c == "report":
@@ -94,7 +94,7 @@ class Lift:
                 self.exit = True
                 self.websocket_handler.exit = True
             elif c == "resource":
-                self.resource = int(arg)
+                self.resource = float(arg)
             elif c == "increased_pop":
                 self.event_rate["add_people"] += int(arg)
             elif c == "decreased_pop":
@@ -104,17 +104,24 @@ class Lift:
                 self.running = True
             elif c == "offline":
                 self.running = False
+            elif c == "id":
+                self.id=str(arg)
+            elif c == "name":
+                self.name=str(arg)
 
     def create_report(self):
         rep = {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type.name,
-            "speed": self.speed,
-            "customers": self.queue,
-            "resource": self.resource,
-            "consumption": self.consumption,
-            "events": self.event_rate
+            "action":"report",
+            "data":{
+                "id": self.id,
+                "name": self.name,
+                "type": self.type.name,
+                "speed": self.speed,
+                "customers": self.queue,
+                "resource": self.resource,
+                "consumption": self.consumption,
+                "events": self.event_rate
+            }
         }
         print(rep)
         return json.dumps(rep)
@@ -137,7 +144,7 @@ class Lift:
 
     def find_lowest_available_speed(self):
         for i in range(self.speed + 1):
-            if self.calculate_consumption(self.speed - i) <= self.resource:
+            if self.calculate_consumption(self.speed - i,self.type) <= self.resource:
                 self.change_speed(self.speed - i)
                 break
 
@@ -172,9 +179,10 @@ class Lift:
             return base_consumption + pow(speed, 1.35)
 
     class WebSocketManager:
-        def __init__(self, hostname, port, input: multiprocessing.SimpleQueue, output: multiprocessing.SimpleQueue):
+        def __init__(self, hostname, port, target, input: multiprocessing.SimpleQueue, output: multiprocessing.SimpleQueue):
             self.hostname = hostname
             self.port = port
+            self.target=target
             self.input = input
             self.output = output
             self.exit = False
@@ -202,7 +210,7 @@ class Lift:
         async def handler(self):
             while not self.exit:
                 try:
-                    async with websockets.connect("ws://{}:{}".format(self.hostname, self.port)) as websocket:
+                    async with websockets.connect("ws://{}:{}/{}".format(self.hostname, self.port,self.target)) as websocket:
 
                         data = await websocket.recv()
                         command = json.loads(data)

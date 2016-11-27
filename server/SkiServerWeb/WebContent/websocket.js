@@ -1,5 +1,5 @@
 window.onload = init;
-var socket = new WebSocket("ws://localhost:8080/SkiServerWeb/lift/1");
+var socket = new WebSocket("ws://localhost:8080/SkiServerWeb/lift");
 socket.onmessage = onMessage;
 
 function onMessage(event) {

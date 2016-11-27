@@ -3,9 +3,11 @@ package websocket;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 
+import management.lift.Command;
+
 @Remote
 public interface CommunicatorSocketLocal {
 
-	void sendMessageToId(String id, String msg);
+	void sendCommandToLiftId(String liftId, Command command, String argument);
 
 }

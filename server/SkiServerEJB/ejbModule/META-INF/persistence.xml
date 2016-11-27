@@ -5,8 +5,11 @@
 	<persistence-unit name="SkiServerEJB">
 		<jta-data-source>java:/DerbyDB</jta-data-source>
 		<class>lift.Lift</class>
+		<class>lift.LiftValue</class>
 		<properties>
 			<property name="hibernate.hbm2ddl.auto" value="update"></property>
+			<property name="hibernate.dialect" 
+                  value="org.hibernate.dialect.DerbyTenSixDialect"/>
 		</properties>
 	</persistence-unit>
 </persistence>
