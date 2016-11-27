@@ -12,7 +12,7 @@ import management.AbstractFacade;
  */
 @Stateless
 @LocalBean
-public class LiftValueFacade extends AbstractFacade<LiftValue> implements LiftValueFacadeLocal {
+public class LiftValueFacade extends AbstractFacade<LiftValue>{
 	@PersistenceContext
 	EntityManager em;
 

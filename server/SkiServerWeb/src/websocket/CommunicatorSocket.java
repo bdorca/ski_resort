@@ -37,7 +37,7 @@ import management.lift.LiftType;
 @ServerEndpoint("/lift")
 @Stateless
 @LocalBean
-public class CommunicatorSocket implements CommunicatorSocketRemote, CommunicatorSocketLocal {
+public class CommunicatorSocket implements CommunicatorSocketLocal {
 
 	private static Map<Session, String> availableSessions = new HashMap<>();
 
@@ -65,7 +65,7 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 	public void postContr() {
 		if(executor==null)
 			executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleAtFixedRate(reportTask, 0, 2, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(reportTask, 0, 5, TimeUnit.SECONDS);
 	}
 
 	Runnable reportTask = new Runnable() {
@@ -144,9 +144,10 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			float resource = (float) (data.getJsonNumber("resource")).doubleValue();
 			float consumption = (float) (data.getJsonNumber("speed")).doubleValue();
 			JsonObject eventsObject = data.getJsonObject("events");
+			boolean running=data.getBoolean("running");
 			Events events = new Events((float) eventsObject.getJsonNumber("failure").doubleValue(),
 					(float) eventsObject.getJsonNumber("add_people").doubleValue());
-			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events);
+			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events,running);
 			liftHolder.setLiftData(liftId, l);
 		} catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
 			e.printStackTrace();

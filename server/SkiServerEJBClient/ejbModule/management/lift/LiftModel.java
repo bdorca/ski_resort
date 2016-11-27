@@ -1,7 +1,5 @@
 package management.lift;
 
-import java.util.Map;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -31,10 +29,12 @@ public class LiftModel{
     private float consumption;
 	@XmlElement
     private Events events;
+	@XmlElement
+	private boolean running;
 	public LiftModel(){		
 	}
 	public LiftModel(String id, String name, LiftType type, float speed, float customers, float resource,
-			float consumption, Events events) {
+			float consumption, Events events, boolean running) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -44,6 +44,7 @@ public class LiftModel{
 		this.resource = resource;
 		this.consumption = consumption;
 		this.events = events;
+		this.running=running;
 	}
 	public float getConsumption() {
 		return consumption;
@@ -73,6 +74,12 @@ public class LiftModel{
 
 	public LiftType getType() {
 		return type;
+	}
+	public boolean isRunning() {
+		return running;
+	}
+	public void setRunning(boolean running) {
+		this.running = running;
 	}
 	
 	

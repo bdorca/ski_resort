@@ -2,6 +2,7 @@ package lift;
 
 import java.util.Map;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,6 +44,7 @@ public class Lift {
 	private float add_people;
 	@ManyToOne()
 	private LiftValue values;
+	private int running;
 	
 	public Lift() {
 
@@ -59,16 +61,17 @@ public class Lift {
 	}
 
 	public Lift(String id2, String name2, LiftType type, float speed2, float customers2, float resource2,
-			float consumption2, Events events) {
+			float consumption2, Events events, boolean running) {
 		liftId=id2;
 		name=name2;
-		type=type;
+		this.type=type;
 		speed=speed2;
 		customers=customers2;
 		resource=resource2;
 		consumption=consumption2;
 		failure=events.getFailure();
 		add_people=events.getAdd_people();
+		this.running=running?1:0;
 	}
 
 	public float getConsumption() {
@@ -139,7 +142,7 @@ public class Lift {
 	}
 
 	public void setData(String name2, LiftType type, float speed2, float customers2, float resource2,
-			float consumption2, Events events) {
+			float consumption2, Events events, boolean running) {
 		name=name2;
 		this.type=type;
 		speed=speed2;
@@ -147,7 +150,8 @@ public class Lift {
 		resource=resource2;
 		consumption=consumption2;
 		failure=events.getFailure();
-		add_people=events.getAdd_people();		
+		add_people=events.getAdd_people();
+		this.running=running?1:0;
 	}
 
 	public LiftValue getValues() {
@@ -156,6 +160,10 @@ public class Lift {
 
 	public void setValues(LiftValue values) {
 		this.values=values;
+	}
+
+	public boolean getRunning() {
+		return running==1?true:false;
 	}
 
 }

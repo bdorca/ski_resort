@@ -78,7 +78,7 @@ class Lift:
         list_of_commands = ["speed", "change_speed", "resource", "increased_pop", "decreased_pop", "customer", "report",
                             "online", "offline", "exit", "id", "name"]
         c, arg = (command["command"], command["arg"])
-       
+
         if c not in list_of_commands:
             logging.error("Unknown command {}".format(command))
         else:
@@ -120,7 +120,8 @@ class Lift:
                 "customers": self.queue,
                 "resource": self.resource,
                 "consumption": self.consumption,
-                "events": self.event_rate
+                "events": self.event_rate,
+                "running":self.running
             }
         }
         print(rep)
@@ -210,13 +211,12 @@ class Lift:
 
 
 def create_lifts():
-    L1 = Lift(LiftType.small,resource=0,url="localhost:8080")
-
+    L1 = Lift(LiftType.small,resource=0,url="localhost:8080/SkiServerWeb/lift")
     multiprocessing.Process(target=L1.simulation).start()
-    # L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    # multiprocessing.Process(target=L2.simulation).start()
-    # L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    # multiprocessing.Process(target=L3.simulation).start()
+    L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    multiprocessing.Process(target=L2.simulation).start()
+    L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    multiprocessing.Process(target=L3.simulation).start()
 
 
 def main():

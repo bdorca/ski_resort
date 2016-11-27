@@ -76,11 +76,11 @@ public class LiftHolder implements LiftHolderLocal {
 	}
 
 	private LiftModel toLiftModel(Lift lift) {
-		return new LiftModel(lift.getLiftId(),lift.getName(),lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents());
+		return new LiftModel(lift.getLiftId(),lift.getName(),lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),lift.getRunning());
 	}
 
 	private Lift toLift(LiftModel lift) {
-		return new Lift(lift.getId(), lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents());
+		return new Lift(lift.getId(), lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),lift.isRunning());
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class LiftHolder implements LiftHolderLocal {
 			l=toLift(lift);
 			liftFacade.create(l);
 		} else {
-			l.setData(lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents());
+			l.setData(lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),l.getRunning());
 		}
 		
 		if(l.getValues()==null){
@@ -130,6 +130,9 @@ public class LiftHolder implements LiftHolderLocal {
 		sendCommand(liftId,cmd,""+arg);
 	}
 
+	/**
+	 * only for testing
+	 */
 	@Override
 	public void setLiftData(String liftId, String name, LiftType type) {
 		Lift l = liftFacade.findLiftByLiftId(liftId);
@@ -137,7 +140,7 @@ public class LiftHolder implements LiftHolderLocal {
 			l=new Lift(liftId,name,type);
 			liftFacade.create(l);
 		} else {
-			l.setData(name,type,10,20,30,40,new Events(0.1f,0.7f));
+			l.setData(name,type,10,20,30,40,new Events(0.1f,0.7f),true);
 		}
 		
 		if(l.getValues()==null){

@@ -22,7 +22,7 @@
                             <option name="type" value="small">small</option>
                             <option name="type" value="medium">medium</option>
                             <option name="type" value="large">large</option>
-                            <option name="type" value="extralarge">extralarge</option>
+                            <option name="type" value="extra_large">extra_large</option>
                         </select></span>
 
                     <input type="button" class="button" value="Add" onclick=formSubmit()>
