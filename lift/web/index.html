@@ -173,13 +173,12 @@
             <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mártaszentistván Ski Resort</h1>
         </div>
         <div class="navbar-right">
-            <form class="form-group" method="post" action="URL">
+            <form class="form-group" id="login_form" method="post" action="/post">
                 <input type="text" class="form-control" id="login_username" name="username" placeholder="Username"
                        style="height: 30px; ">
                 <input type="password" class="form-control" id="login_password" name="password" placeholder="Password"
                        style="height: 30px;">
-                <button type="submit" class="btn btn-default" id="login_button"><span
-                        class="glyphicon glyphicon-log-in"></span></button>
+                <button type="submit" form="login_form" class="btn btn-default" id="login_button"><span class="glyphicon glyphicon-log-in"></span></button>
             </form>
         </div>
     </div>
