@@ -4,6 +4,8 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -57,15 +59,32 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 
 	@PostConstruct
 	public void postContr() {
-
+		if (timer == null) {
+			timer = new Timer();
+		} else {
+			timer.cancel();
+		}
+		timer.schedule(r, 500);
 	}
+
+	Timer timer;
+	TimerTask r = new TimerTask() {
+
+		@Override
+		public void run() {
+			for (Entry<Session, String> e : availableSessions.entrySet()) {
+				sendCommandToLiftId(e.getValue(), Command.report, "");
+			}
+			timer.schedule(r, 500);
+		}
+	};
 
 	@OnOpen
 	public void onOpen(Session session) {
 		String liftId = UUID.randomUUID().toString();
 		availableSessions.put(session, liftId);
 		liftHolder.addNewLift(liftId);
-		sendCommandToLiftId(liftId, Command.id, liftId);
+		// sendCommandToLiftId(liftId, Command.id, liftId);
 		sendCommandToLiftId(liftId, Command.report, "");
 		System.out.println("new session, lift: " + liftId);
 	}
@@ -108,10 +127,21 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 	}
 
 	private void addNewLift(String liftId, JsonObject data) {
+		boolean changeid = false;
 		try {
+			LiftType.valueOf(liftId);
+		} catch (IllegalArgumentException e) {
+			changeid = true;
+		}
+
+		try {
+			String newId = liftId;
 			String name = data.getString("name");
 			String type = data.getString("type");
 			LiftType size = LiftType.valueOf(type);
+			if (changeid) {
+				newId = type.toString();
+			}
 			float speed = (float) (data.getJsonNumber("speed")).doubleValue();
 			float customers = (float) (data.getJsonNumber("customers")).doubleValue();
 			float resource = (float) (data.getJsonNumber("resource")).doubleValue();
@@ -119,9 +149,14 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			JsonObject eventsObject = data.getJsonObject("events");
 			Events events = new Events((float) eventsObject.getJsonNumber("failure").doubleValue(),
 					(float) eventsObject.getJsonNumber("add_people").doubleValue());
-			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events);
+			LiftModel l = new LiftModel(newId, name, size, speed, customers, resource, consumption, events);
 			liftHolder.setLiftData(liftId, l);
-		} catch (ClassCastException | NullPointerException e) {
+
+			if (changeid) {
+				sendCommandToLiftId(liftId, Command.id, newId);
+				availableSessions.put(getSessionbyId(liftId), newId);
+			}
+		} catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
 			e.printStackTrace();
 			sendErrorToSession(getSessionbyId(liftId), "json has bad type");
 		}

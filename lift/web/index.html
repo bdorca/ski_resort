@@ -1,31 +1,30 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
-    <meta charset="UTF-8">
-    <title>Best Ski Resort EU</title>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<meta charset="UTF-8">
+<title>Best Ski Resort EU</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    type="text/css">
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<!-- Optional theme -->
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-            crossorigin="anonymous"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}">
+<link rel="stylesheet" type="text/css"
+    href="style.css">
 
-    <!--<script src="{{url_for('static',filename='script.js')}}"></script>-->
+<!--<script src="{{url_for('static',filename='script.js')}}"></script>-->
 </head>
 <body>
-<script type="text/javascript">
+    <script type="text/javascript">
     var selected_lift_html = "";
     var lift_data = {
         "small": {"name": "gyakorlo", "type": "small"},
@@ -35,7 +34,7 @@
 
     (function update_lift_data() {
         $.ajax({
-            url: 'http://localhost:8000/rest/LiftData/lifts',
+            url: 'http://localhost:8080/SkiServerRest/liftData/lifts',
             success: function (data) {
                 lift_data = (JSON).parse(data);
             },
@@ -109,96 +108,103 @@
             return
         }
 
+        var commandString="http://localhost:8080/SkiServerRest/liftData/command/"
         if ((typeof queue_change !== undefined) && (parseFloat(queue_change) !== 0) && !(isNaN(parseFloat(queue_change)))) {
             console.log(parseFloat(queue_change))
-            $.get("http://localhost:8000/" + lift_data[lift_id]["id"] + "?customer=" + queue_change)
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=customer&arg=" + queue_change)
         }
         if ((typeof resource_change !== undefined) && (parseFloat(resource_change) !== 0) && !(isNaN(parseFloat(resource_change)))) {
-            $.get("http://localhost:8000/" + lift_data[lift_id]["id"] + "?resource=" + resource_change)
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=resource&arg=" + resource_change)
         }
         if ((typeof traffic_change !== undefined) && (parseFloat(traffic_change) !== 0) && !(isNaN(parseFloat(traffic_change)))) {
             if (parseFloat(traffic_change) > 0)
-                $.get("http://localhost:8000/" + lift_data[lift_id]["id"] + "?increased_pop=" + traffic_change)
+                $.get(commandString + lift_data[lift_id]["id"] + "?command=increased_pop&arg=" + traffic_change)
             else
-                $.get("http://localhost:8000/" + lift_data[lift_id]["id"] + "?decreased_pop=" + traffic_change)
+                $.get(commandString + lift_data[lift_id]["id"] + "?command=decreased_pop&arg=" + traffic_change)
         }
 
 
     };
 </script>
-<div class="jumbotron text-center"
-     style="padding-top: 10px;padding-bottom: 10px; background-color:#37c7ff;box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
-    <h1>Best Ski Resort EU</h1>
-</div>
-
-
-<div class="row">
-    <div class="col-sm-2">
+    <div class="jumbotron text-center"
+        style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
+        <h1>Best Ski Resort EU</h1>
     </div>
-    <div class="col-sm-2">
-        <div class="form-group">
-            <label for="lift_name">Name:</label>
-            <input type="text" class="form-control" id="lift_name" readonly>
-            <label for="lift_type">Type:</label>
-            <input type="text" class="form-control" id="lift_type" readonly>
-            <label for="lift_queue">Queue:</label>
-            <input type="text" class="form-control" id="lift_queue" readonly>
-            <label for="lift_consumption">Consumption:</label>
-            <input type="text" class="form-control" id="lift_consumption" readonly>
-            <label for="lift_resource">Available resource:</label>
-            <input type="text" class="form-control" id="lift_resource" readonly>
+
+
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                <label for="lift_name">Name:</label> <input type="text"
+                    class="form-control" id="lift_name" readonly> <label
+                    for="lift_type">Type:</label> <input type="text"
+                    class="form-control" id="lift_type" readonly> <label
+                    for="lift_queue">Queue:</label> <input type="text"
+                    class="form-control" id="lift_queue" readonly> <label
+                    for="lift_consumption">Consumption:</label> <input type="text"
+                    class="form-control" id="lift_consumption" readonly> <label
+                    for="lift_resource">Available resource:</label> <input type="text"
+                    class="form-control" id="lift_resource" readonly>
+            </div>
+            <div class="form-group">
+                <label for="lift_traffic_change">Traffic has changed:</label> <input
+                    type="text" class="form-control" id="lift_traffic_change">
+                <label for="lift_queue_change">People has arrived:</label> <input
+                    type="text" class="form-control" id="lift_queue_change"> <label
+                    for="lift_resource_change">Change available resources:</label> <input
+                    type="text" class="form-control" id="lift_resource_change">
+                </br> <input type="button" class="btn btn-default center-block"
+                    id="form_send_button" value="Send" onclick="send_command()">
+
+            </div>
         </div>
-        <div class="form-group">
-            <label for="lift_traffic_change">Traffic has changed:</label>
-            <input type="text" class="form-control" id="lift_traffic_change">
-            <label for="lift_queue_change">People has arrived:</label>
-            <input type="text" class="form-control" id="lift_queue_change">
-            <label for="lift_resource_change">Change available resources:</label>
-            <input type="text" class="form-control" id="lift_resource_change">
-            </br>
-            <input type="button" class="btn btn-default center-block" id="form_send_button" value="Send" onclick="send_command()">
+        <div class="col-md-8">
+
+            <div style="z-index: 1; position: relative;">
+                <img src="siterkep_day.jpg" height="600px">
+<!--                <img src="{{url_for('static',filename='siterkep_day.jpg')}}" -->
+<!--                    height="600px"> -->
+            </div>
+
+
+            <div id="small"
+                style="position: absolute; top: 185px; left: 250px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="small_lift_name">
+                    <center>Gyakorló lift</center>
+                </div>
+                <div class="circle_off circle" id="small_lift"></div>
+            </div>
+
+            <div id="medium"
+                style="position: absolute; top: 205px; left: 320px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="normal_lift_name">
+                    <center>Középhaladó lift</center>
+                </div>
+                <div class="circle_off circle" id="normal_lift"></div>
+            </div>
+
+            <div id="large"
+                style="position: absolute; top: 360px; left: 600px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="big_lift_name">
+                    <center>Haladó lift</center>
+                </div>
+                <div class="circle_off circle" id="big_lift"></div>
+            </div>
 
         </div>
     </div>
-    <div class="col-md-8">
-
-        <div style="z-index: 1;position: relative; ">
-            <!--<img src="./siterkep_day.jpg" height="600px">-->
-            <img src="{{url_for('static',filename='siterkep_day.jpg')}}" height="600px">
-        </div>
-
-
-        <div id="small" style="position: absolute; top:185px; left: 250px; z-index: 2;"
-             onmouseenter="lift_point_mouse_over(this)"
-             onmouseleave="lift_point_mouse_left(this)" onmousedown="lift_mouse_down(this)">
-            <!---->
-            <div class="lift_name" id="small_lift_name">
-                <center> Gyakorló lift</center>
-            </div>
-            <div class="circle_off circle" id="small_lift"></div>
-        </div>
-
-        <div id="medium" style="position: absolute; top:205px; left: 320px; z-index: 2;"
-             onmouseenter="lift_point_mouse_over(this)"
-             onmouseleave="lift_point_mouse_left(this)" onmousedown="lift_mouse_down(this)">
-            <!---->
-            <div class="lift_name" id="normal_lift_name">
-                <center> Középhaladó lift</center>
-            </div>
-            <div class="circle_off circle" id="normal_lift"></div>
-        </div>
-
-        <div id="large" style="position: absolute; top:360px; left: 600px; z-index: 2;"
-             onmouseenter="lift_point_mouse_over(this)"
-             onmouseleave="lift_point_mouse_left(this)" onmousedown="lift_mouse_down(this)">
-            <!---->
-            <div class="lift_name" id="big_lift_name">
-                <center> Haladó lift</center>
-            </div>
-            <div class="circle_off circle" id="big_lift"></div>
-        </div>
-
-    </div>
-</div>
 </body>
 </html>

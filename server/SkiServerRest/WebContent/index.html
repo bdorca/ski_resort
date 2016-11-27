@@ -1,10 +1,210 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Best Ski Resort EU</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    type="text/css">
+
+<!-- Optional theme -->
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+<link rel="stylesheet" type="text/css"
+    href="style.css">
+
+<!--<script src="{{url_for('static',filename='script.js')}}"></script>-->
 </head>
 <body>
-Take a REST!
+    <script type="text/javascript">
+    var selected_lift_html = "";
+    var lift_data = {
+        "small": {"name": "gyakorlo", "type": "small"},
+        "medium": {"name": "kozephalado", "type": "medium"},
+        "large": {"name": "halado", "type": "large"}
+    };
+
+    (function update_lift_data() {
+        $.ajax({
+            url: 'http://localhost:8080/SkiServerRest/liftData/lifts',
+            success: function (data) {
+                lift_data = (JSON).parse(data);
+            },
+            complete: function () {
+                try {
+                    refresh_lift_fields();
+                }
+                catch (err) {
+                    console.log("No lift has been selected yet.")
+                }
+                setTimeout(update_lift_data, 2000)
+            }
+        });
+    })();
+
+    function prependClass(sel, strClass) {
+        /* prepend class */
+        var classes = sel.attr('class');
+        classes = strClass + ' ' + classes;
+        sel.attr('class', classes);
+    }
+
+
+    var refresh_lift_fields = function () {
+        var id = $(selected_lift_html).attr('id');
+
+        $("#lift_name").val(lift_data[id]["name"]);
+        $("#lift_type").val(lift_data[id]["type"]);
+        $("#lift_queue").val(lift_data[id]["customers"]);
+        $("#lift_consumption").val(lift_data[id]["consumption"]);
+        $("#lift_resource").val(lift_data[id]["resource"]);
+
+    };
+
+    var lift_mouse_down = function (x) {
+        if (!(x === selected_lift_html)) {
+            var old = selected_lift_html;
+            selected_lift_html = x;
+            selected_changed(old);
+
+            prependClass($(x).children(".circle"), "selected_circle");
+            prependClass($(x).children(".lift_name"), "selected_text");
+        }
+
+    };
+    var selected_changed = function (old) {
+        $(old).children(".circle").removeClass("selected_circle");
+        $(old).children(".lift_name").removeClass("selected_text");
+
+        refresh_lift_fields();
+
+    };
+    var lift_point_mouse_over = function (x) {
+        prependClass($(x).children(".circle"), "hovered_circle");
+        prependClass($(x).children(".lift_name"), "hovered_text");
+    };
+
+    var lift_point_mouse_left = function (x) {
+        $(x).children(".circle").removeClass("hovered_circle");
+        $(x).children(".lift_name").removeClass("hovered_text");
+    };
+
+    var send_command = function () {
+        var queue_change = $("#lift_queue_change").val();
+        var resource_change = $("#lift_resource_change").val();
+        var traffic_change = $("#lift_traffic_change").val();
+
+        lift_id = $(selected_lift_html).attr("id");
+        if (typeof lift_id === undefined) {
+            alert("No lift has been selected!");
+            return
+        }
+
+        var commandString="http://localhost:8080/SkiServerRest/liftData/command/"
+        if ((typeof queue_change !== undefined) && (parseFloat(queue_change) !== 0) && !(isNaN(parseFloat(queue_change)))) {
+            console.log(parseFloat(queue_change))
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=customer&arg=" + queue_change)
+        }
+        if ((typeof resource_change !== undefined) && (parseFloat(resource_change) !== 0) && !(isNaN(parseFloat(resource_change)))) {
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=resource&arg=" + resource_change)
+        }
+        if ((typeof traffic_change !== undefined) && (parseFloat(traffic_change) !== 0) && !(isNaN(parseFloat(traffic_change)))) {
+            if (parseFloat(traffic_change) > 0)
+                $.get(commandString + lift_data[lift_id]["id"] + "?command=increased_pop&arg=" + traffic_change)
+            else
+                $.get(commandString + lift_data[lift_id]["id"] + "?command=decreased_pop&arg=" + traffic_change)
+        }
+
+
+    };
+</script>
+    <div class="jumbotron text-center"
+        style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
+        <h1>Best Ski Resort EU</h1>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                <label for="lift_name">Name:</label> <input type="text"
+                    class="form-control" id="lift_name" readonly> <label
+                    for="lift_type">Type:</label> <input type="text"
+                    class="form-control" id="lift_type" readonly> <label
+                    for="lift_queue">Queue:</label> <input type="text"
+                    class="form-control" id="lift_queue" readonly> <label
+                    for="lift_consumption">Consumption:</label> <input type="text"
+                    class="form-control" id="lift_consumption" readonly> <label
+                    for="lift_resource">Available resource:</label> <input type="text"
+                    class="form-control" id="lift_resource" readonly>
+            </div>
+            <div class="form-group">
+                <label for="lift_traffic_change">Traffic has changed:</label> <input
+                    type="text" class="form-control" id="lift_traffic_change">
+                <label for="lift_queue_change">People has arrived:</label> <input
+                    type="text" class="form-control" id="lift_queue_change"> <label
+                    for="lift_resource_change">Change available resources:</label> <input
+                    type="text" class="form-control" id="lift_resource_change">
+                </br> <input type="button" class="btn btn-default center-block"
+                    id="form_send_button" value="Send" onclick="send_command()">
+
+            </div>
+        </div>
+        <div class="col-md-8">
+
+            <div style="z-index: 1; position: relative;">
+                <img src="siterkep_day.jpg" height="600px">
+<!--                <img src="{{url_for('static',filename='siterkep_day.jpg')}}" -->
+<!--                    height="600px"> -->
+            </div>
+
+
+            <div id="small"
+                style="position: absolute; top: 185px; left: 250px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="small_lift_name">
+                    <center>Gyakorló lift</center>
+                </div>
+                <div class="circle_off circle" id="small_lift"></div>
+            </div>
+
+            <div id="medium"
+                style="position: absolute; top: 205px; left: 320px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="normal_lift_name">
+                    <center>Középhaladó lift</center>
+                </div>
+                <div class="circle_off circle" id="normal_lift"></div>
+            </div>
+
+            <div id="large"
+                style="position: absolute; top: 360px; left: 600px; z-index: 2;"
+                onmouseenter="lift_point_mouse_over(this)"
+                onmouseleave="lift_point_mouse_left(this)"
+                onmousedown="lift_mouse_down(this)">
+                <!---->
+                <div class="lift_name" id="big_lift_name">
+                    <center>Haladó lift</center>
+                </div>
+                <div class="circle_off circle" id="big_lift"></div>
+            </div>
+
+        </div>
+    </div>
 </body>
 </html>

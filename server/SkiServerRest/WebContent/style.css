@@ -1,0 +1,51 @@
+
+.circle{
+
+}
+.circle_off{
+    position: relative;
+    top: 15px;
+    left:20px;
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    background: red;
+    border: 2px solid black;
+    z-index: 4;
+}
+
+.circle_on{
+    position: relative;
+    top: 15px;
+    left:20px;
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    background: green;
+    border: 2px solid black;
+    z-index: 4;
+}
+
+.lift_name{
+    position: absolute;
+    top: 0px;
+    left: -10px;
+    text-shadow: -1.5px -1.5px 2px white, -1.5px 1.5px 2px white, 1.5px -1.5px 2px white, 1.5px 1.5px 2px white, 0px 1.5px 2px white, 1.5px 0px 2px white, 0px -1.5px 2px white, -1.5px 0px 2px white;
+    white-space: nowrap;
+    z-index: 5;
+}
+.selected_text{
+    text-shadow: -1.5px -1.5px 2px #3c84e6, -1.5px 1.5px 2px #3c84e6, 1.5px -1.5px 2px #3c84e6, 1.5px 1.5px 2px #3c84e6, 0px 1.5px 2px #3c84e6, 1.5px 0px 2px #3c84e6, 0px -1.5px 2px #3c84e6, -1.5px 0px 2px #3c84e6;
+    
+}
+.selected_circle{
+    border: 2px solid #3c84e6;
+
+}
+.hovered_text{
+    text-shadow: -1.5px -1.5px 2px yellow, -1.5px 1.5px 2px yellow, 1.5px -1.5px 2px yellow, 1.5px 1.5px 2px yellow, 0px 1.5px 2px yellow, 1.5px 0px 2px yellow, 0px -1.5px 2px yellow, -1.5px 0px 2px yellow;
+    
+}
+.hovered_circle{
+    border:2px solid yellow;
+}
