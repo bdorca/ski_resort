@@ -11,8 +11,10 @@ import javax.naming.NamingException;
 
 import exception.LiftException;
 import management.lift.Command;
+import management.lift.Events;
 import management.lift.LiftHolderLocal;
 import management.lift.LiftModel;
+import management.lift.LiftType;
 import websocket.CommunicatorSocketLocal;
 
 /**
@@ -126,5 +128,30 @@ public class LiftHolder implements LiftHolderLocal {
 	@Override
 	public void sendCommand(String liftId, Command cmd, float arg) throws LiftException {
 		sendCommand(liftId,cmd,""+arg);
+	}
+
+	@Override
+	public void setLiftData(String liftId, String name, LiftType type) {
+		Lift l = liftFacade.findLiftByLiftId(liftId);
+		if (l == null) {
+			l=new Lift(liftId,name,type);
+			liftFacade.create(l);
+		} else {
+			l.setData(name,type,10,20,30,40,new Events(0.1f,0.7f));
+		}
+		
+		if(l.getValues()==null){
+			l.setValues(liftValueFacade.find(l.getType()));
+			String n=l.getValues().getName();
+			float initResource=l.getValues().getInitResource();
+			l.setName(n);
+			l.setResource(initResource);
+			try {
+				sendCommand(liftId,Command.name,l.getValues().getName());
+				sendCommand(liftId,Command.resource,initResource);
+			} catch (LiftException e) {
+				e.printStackTrace();
+			}
+		}
 	}	
 }

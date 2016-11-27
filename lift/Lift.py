@@ -43,7 +43,7 @@ class Lift:
         }
         self.running = False
         self.exit = False
-        self.websocket_handler = Lift.WebSocketManager("localhost", 8080, "SkiServerWeb/lift", self.input, self.output)
+        self.websocket_handler = Lift.WebSocketManager(url, self.input, self.output)
         p = multiprocessing.Process(target=self.websocket_handler.start)
         p.start()
 

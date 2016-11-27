@@ -35,6 +35,9 @@
     (function update_lift_data() {
         $.ajax({
             url: 'http://localhost:8080/SkiServerRest/liftData/lifts',
+            headers: {
+                Accept : "text/json; charset=utf-8"
+            },
             success: function (data) {
                 lift_data = (JSON).parse(data);
             },
