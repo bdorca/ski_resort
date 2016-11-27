@@ -26,8 +26,8 @@ class Lift:
                  }
 
     def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, consumption=0, url=""):
-        self.input = multiprocessing.SimpleQueue()
-        self.output = multiprocessing.SimpleQueue()
+        self.input = multiprocessing.Queue()
+        self.output = multiprocessing.Queue()
         self.id = my_id
         self.name = name
         self.queue = queue
@@ -38,12 +38,12 @@ class Lift:
         self.last_sim_time = 0
         self.type = type
         self.event_rate = {
-            "failure": 0.05,
+            "failure": 0.01,
             "add_people": 1.5
         }
         self.running = False
         self.exit = False
-        self.websocket_handler = Lift.WebSocketManager("localhost", 8080, "SkiServerWeb/lift", self.input, self.output)
+        self.websocket_handler = Lift.WebSocketManager(url, self.input, self.output)
         p = multiprocessing.Process(target=self.websocket_handler.start)
         p.start()
 
@@ -51,10 +51,10 @@ class Lift:
         self.last_sim_time = time.time()
         self.running = True
         while not self.exit:
+            if not self.input.empty():
+                while not self.input.empty():
+                    self.handle_command(self.input.get())
             if self.running:
-                if not self.input.empty():
-                    while not self.input.empty():
-                        self.handle_command(self.input.get())
 
                 t = time.time() - self.last_sim_time
                 self.last_sim_time = time.time()
@@ -78,7 +78,7 @@ class Lift:
         list_of_commands = ["speed", "change_speed", "resource", "increased_pop", "decreased_pop", "customer", "report",
                             "online", "offline", "exit", "id", "name"]
         c, arg = (command["command"], command["arg"])
-
+       
         if c not in list_of_commands:
             logging.error("Unknown command {}".format(command))
         else:
@@ -210,12 +210,13 @@ class Lift:
 
 
 def create_lifts():
-    L1 = Lift(LiftType.small,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    L1 = Lift(LiftType.small,resource=0,url="localhost:8080")
+
     multiprocessing.Process(target=L1.simulation).start()
-    L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    multiprocessing.Process(target=L2.simulation).start()
-    L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    multiprocessing.Process(target=L3.simulation).start()
+    # L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    # multiprocessing.Process(target=L2.simulation).start()
+    # L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    # multiprocessing.Process(target=L3.simulation).start()
 
 
 def main():
