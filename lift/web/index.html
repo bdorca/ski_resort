@@ -71,6 +71,7 @@
             $("#lift_name").val(lift_data[id]["name"]);
             $("#lift_type").val(lift_data[id]["type"]);
             $("#lift_queue").val(lift_data[id]["customers"]);
+            $("#lift_speed").val(lift_data[id]["speed"]);
             $("#lift_consumption").val(lift_data[id]["consumption"]);
             $("#lift_resource").val(lift_data[id]["resource"]);
             if (lift_data[id]["running"]) {
@@ -169,7 +170,7 @@
 
     <div class="container-fluid">
         <div class="navbar-header" style="display: inline-block; float: none;vertical-align: top;">
-            <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Best Ski Resort EU</h1>
+            <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mártaszentistván Ski Resort</h1>
         </div>
         <div class="navbar-right">
             <form class="form-group" method="post" action="URL">
@@ -218,6 +219,8 @@
             <input type="text" class="form-control" id="lift_type" readonly>
             <label for="lift_queue">Queue:</label>
             <input type="text" class="form-control" id="lift_queue" readonly>
+            <label for="lift_speed">Speed:</label>
+            <input type="text" class="form-control" id="lift_speed" readonly>
             <label for="lift_consumption">Consumption:</label>
             <input type="text" class="form-control" id="lift_consumption" readonly>
             <label for="lift_resource">Available resource:</label>
@@ -231,7 +234,7 @@
             <label for="lift_resource_change">Change available resources:</label>
             <input type="text" class="form-control" id="lift_resource_change">
             </br>
-            <input type="button" class="btn btn-default " id="form_send_button" value="Send" onclick="send_command()">
+            <input type="button" class="btn btn-default " id="form_send_button" value="Send" disabled="True" onclick="send_command()">
             <input type="button" id="on-off-button" class="btn btn-danger text-right" value="Start Lift"
                    onclick="send_on_off(this)">
         </div>
