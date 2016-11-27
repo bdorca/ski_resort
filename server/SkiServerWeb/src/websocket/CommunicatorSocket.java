@@ -4,9 +4,11 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.LocalBean;
@@ -41,6 +43,8 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 
 	private LiftHolderLocal liftHolder;
 
+	ScheduledExecutorService executor;
+
 	/**
 	 * Default constructor.
 	 */
@@ -59,23 +63,18 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 
 	@PostConstruct
 	public void postContr() {
-		if (timer == null) {
-			timer = new Timer();
-		} else {
-			timer.cancel();
-		}
-		timer.schedule(r, 500);
+		if(executor==null)
+			executor = Executors.newScheduledThreadPool(1);
+		executor.scheduleAtFixedRate(reportTask, 0, 2, TimeUnit.SECONDS);
 	}
 
-	Timer timer;
-	TimerTask r = new TimerTask() {
+	Runnable reportTask = new Runnable() {
 
 		@Override
 		public void run() {
 			for (Entry<Session, String> e : availableSessions.entrySet()) {
 				sendCommandToLiftId(e.getValue(), Command.report, "");
 			}
-			timer.schedule(r, 500);
 		}
 	};
 
@@ -84,7 +83,7 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 		String liftId = UUID.randomUUID().toString();
 		availableSessions.put(session, liftId);
 		liftHolder.addNewLift(liftId);
-		// sendCommandToLiftId(liftId, Command.id, liftId);
+		 sendCommandToLiftId(liftId, Command.id, liftId);
 		sendCommandToLiftId(liftId, Command.report, "");
 		System.out.println("new session, lift: " + liftId);
 	}
@@ -115,10 +114,13 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			sendMessageToSession(session, "The message does not contain a 'type' field.");
 			return;
 		}
+		JsonObject jo=jObject.getJsonObject("data");
 		switch (messageType) {
 		case "report":
-			addNewLift(liftId, jObject.getJsonObject("data"));
+			addNewLift(liftId, jo);
 			break;
+		case "add":
+			addNewLift(liftId,jo.getString("name"),LiftType.valueOf(jo.getString("type")));
 		default:
 			sendMessageToSession(session, "Unexpected operation: " + messageType);
 			break;
@@ -126,22 +128,17 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 
 	}
 
+	private void addNewLift(String liftId, String name, LiftType type) {
+		liftHolder.setLiftData(liftId, name,type);
+		
+	}
+
 	private void addNewLift(String liftId, JsonObject data) {
-		boolean changeid = false;
-		try {
-			LiftType.valueOf(liftId);
-		} catch (IllegalArgumentException e) {
-			changeid = true;
-		}
 
 		try {
-			String newId = liftId;
 			String name = data.getString("name");
 			String type = data.getString("type");
 			LiftType size = LiftType.valueOf(type);
-			if (changeid) {
-				newId = type.toString();
-			}
 			float speed = (float) (data.getJsonNumber("speed")).doubleValue();
 			float customers = (float) (data.getJsonNumber("customers")).doubleValue();
 			float resource = (float) (data.getJsonNumber("resource")).doubleValue();
@@ -149,13 +146,8 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 			JsonObject eventsObject = data.getJsonObject("events");
 			Events events = new Events((float) eventsObject.getJsonNumber("failure").doubleValue(),
 					(float) eventsObject.getJsonNumber("add_people").doubleValue());
-			LiftModel l = new LiftModel(newId, name, size, speed, customers, resource, consumption, events);
+			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events);
 			liftHolder.setLiftData(liftId, l);
-
-			if (changeid) {
-				sendCommandToLiftId(liftId, Command.id, newId);
-				availableSessions.put(getSessionbyId(liftId), newId);
-			}
 		} catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
 			e.printStackTrace();
 			sendErrorToSession(getSessionbyId(liftId), "json has bad type");
@@ -163,6 +155,7 @@ public class CommunicatorSocket implements CommunicatorSocketRemote, Communicato
 	}
 
 	public void sendMessageToId(String id, String msg) {
+		System.out.println("sendTo "+ id+": "+msg);
 		sendMessageToSession(getSessionbyId(id), msg);
 	}
 
