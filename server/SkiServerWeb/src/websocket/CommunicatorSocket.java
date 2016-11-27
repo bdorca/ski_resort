@@ -101,7 +101,7 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	@OnMessage
 	public void onMessage(Session session, String message) {
 		String liftId = availableSessions.get(session);
-		System.out.println("message: " + message + " , lift: " + liftId);
+//		System.out.println("message: " + message + " , lift: " + liftId);
 		JsonObject jObject = null;
 		String messageType = null;
 		try {
@@ -156,7 +156,7 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	}
 
 	public void sendMessageToId(String id, String msg) {
-		System.out.println("sendTo "+ id+": "+msg);
+//		System.out.println("sendTo "+ id+": "+msg);
 		sendMessageToSession(getSessionbyId(id), msg);
 	}
 

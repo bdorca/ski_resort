@@ -15,22 +15,11 @@
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>command</web-resource-name>
-			<url-pattern>/liftData/command</url-pattern>
+			<url-pattern>/liftData/command/*</url-pattern>
 		</web-resource-collection>
-		<auth-constraint>
-			<role-name>admin</role-name>
-		</auth-constraint>
 		<user-data-constraint>
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
 
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>jaxrs</realm-name>
-	</login-config>
-
-	<security-role>
-		<role-name>admin</role-name>
-	</security-role>
 </web-app>
