@@ -25,7 +25,7 @@ class Lift:
                  LiftType.extra_large: 120
                  }
 
-    def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, consumption=0):
+    def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, consumption=0, url=""):
         self.input = multiprocessing.SimpleQueue()
         self.output = multiprocessing.SimpleQueue()
         self.id = my_id
@@ -96,23 +96,23 @@ class Lift:
             elif c == "resource":
                 self.resource = float(arg)
             elif c == "increased_pop":
-                self.event_rate["add_people"] += int(arg)
+                self.event_rate["add_people"] += float(arg)
             elif c == "decreased_pop":
-                new_rate = self.event_rate["add_people"] - int(arg)
+                new_rate = self.event_rate["add_people"] - float(arg)
                 self.event_rate["add_people"] = new_rate if new_rate >= 0 else 0
             elif c == "online":
                 self.running = True
             elif c == "offline":
                 self.running = False
             elif c == "id":
-                self.id=str(arg)
+                self.id = str(arg)
             elif c == "name":
-                self.name=str(arg)
+                self.name = str(arg)
 
     def create_report(self):
         rep = {
-            "action":"report",
-            "data":{
+            "action": "report",
+            "data": {
                 "id": self.id,
                 "name": self.name,
                 "type": self.type.name,
@@ -144,7 +144,7 @@ class Lift:
 
     def find_lowest_available_speed(self):
         for i in range(self.speed + 1):
-            if self.calculate_consumption(self.speed - i,self.type) <= self.resource:
+            if self.calculate_consumption(self.speed - i, self.type) <= self.resource:
                 self.change_speed(self.speed - i)
                 break
 
@@ -179,10 +179,8 @@ class Lift:
             return base_consumption + pow(speed, 1.35)
 
     class WebSocketManager:
-        def __init__(self, hostname, port, target, input: multiprocessing.SimpleQueue, output: multiprocessing.SimpleQueue):
-            self.hostname = hostname
-            self.port = port
-            self.target=target
+        def __init__(self, url, input: multiprocessing.SimpleQueue, output: multiprocessing.SimpleQueue):
+            self.url = url
             self.input = input
             self.output = output
             self.exit = False
@@ -190,27 +188,10 @@ class Lift:
         def start(self):
             asyncio.get_event_loop().run_until_complete(self.handler())
 
-        # async def try_handler(self):
-        #     async with websockets.connect("ws://localhost:8085") as websocket:
-        #         print(await websocket.recv())
-        #         await websocket.send("Hi, I'm Adam")
-        #         print("Hi I'm Adam")
-        #         print(await websocket.recv())
-        #         for i in range(4):
-        #             await websocket.send("WTF")
-        #             data = await websocket.recv()
-        #             print(data)
-        #             self.channel.put(data)
-        #
-        #         await websocket.send("PLEASE")
-        #         while not self.channel.empty():
-        #             print(self.channel.get())
-
-
         async def handler(self):
             while not self.exit:
                 try:
-                    async with websockets.connect("ws://{}:{}/{}".format(self.hostname, self.port,self.target)) as websocket:
+                    async with websockets.connect("ws://{}".format(self.url)) as websocket:
 
                         data = await websocket.recv()
                         command = json.loads(data)
@@ -228,19 +209,17 @@ class Lift:
                     # print(a)
 
 
-def create_lift(web_url):
-    rsp = requests.get(web_url)
+def create_lifts():
+    L1 = Lift(LiftType.small,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    multiprocessing.Process(target=L1.simulation).start()
+    L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    multiprocessing.Process(target=L2.simulation).start()
+    L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    multiprocessing.Process(target=L3.simulation).start()
 
 
 def main():
-    l = Lift(LiftType.small)
-    print("asd")
-    l.queue = 50
-    l.change_speed(60)
-    l.resource = 50000
-
-    l.simulation()
-
+    create_lifts()
 
 if __name__ == '__main__':
     main()
