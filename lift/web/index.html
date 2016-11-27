@@ -48,7 +48,7 @@
                 catch (err) {
                     console.log("No lift has been selected yet.")
                 }
-                setTimeout(update_lift_data, 2000)
+                setTimeout(update_lift_data, 2000000)
             }
         });
     })();
@@ -69,7 +69,20 @@
         $("#lift_queue").val(lift_data[id]["customers"]);
         $("#lift_consumption").val(lift_data[id]["consumption"]);
         $("#lift_resource").val(lift_data[id]["resource"]);
+        if(lift_data[id]["running"])
+            $("#on-off-button").removeClass("btn-danger").addClass("btn-success");
+        else
+            $("#on-off-button").removeClass("btn-success").addClass("btn-danger");
+        
+        var circles = $(".circle");
+        for(i = 0; i< circles.length ;i++){
+            var id = $(circles[i]).attr("id");
+            if(lift_data[id]["running"])
+                $(circles[i]).removeClass("circle_off").addClass("circle_on");
+            else
+                $(circles[i]).removeClass("circle_on").addClass("circle_off");
 
+        }
     };
 
     var lift_mouse_down = function (x) {
@@ -81,7 +94,6 @@
             prependClass($(x).children(".circle"), "selected_circle");
             prependClass($(x).children(".lift_name"), "selected_text");
         }
-
     };
     var selected_changed = function (old) {
         $(old).children(".circle").removeClass("selected_circle");
@@ -128,6 +140,14 @@
 
 
     };
+
+    var send_on_off = function (x) {
+        if($(x).classList.contains("btn-danger"))
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=online")
+        else
+            $.get(commandString + lift_data[lift_id]["id"] + "?command=offline")
+
+    }
 </script>
     <div class="jumbotron text-center"
         style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
@@ -157,9 +177,9 @@
                     type="text" class="form-control" id="lift_queue_change"> <label
                     for="lift_resource_change">Change available resources:</label> <input
                     type="text" class="form-control" id="lift_resource_change">
-                </br> <input type="button" class="btn btn-default center-block"
+                </br> <input type="button" class="btn btn-default "
                     id="form_send_button" value="Send" onclick="send_command()">
-
+                <input type="button" id="on-off-button" class="btn btn-danger text-right" value="Lift offline" onclick="send_on_off(this)">
             </div>
         </div>
         <div class="col-md-8">
