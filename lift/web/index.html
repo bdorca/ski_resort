@@ -18,10 +18,10 @@
 
     <!-- Latest compiled and minified JavaScript -->
 
-    <link rel="stylesheet" type="text/css"
-          href="style.css">
+    <!--<link rel="stylesheet" type="text/css"-->
+          <!--href="style.css">-->
 
-    <!--<script src="{{url_for('static',filename='script.js')}}"></script>-->
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}"></link>
 </head>
 <body>
 <script type="text/javascript">
@@ -31,13 +31,13 @@
         "medium": {"name": "kozephalado", "type": "medium"},
         "large": {"name": "halado", "type": "large"}
     };
-    var login = function(){
-
-    }
+//    var login = function () {
+//
+//    }
 
     (function update_lift_data() {
         $.ajax({
-            url: 'http://localhost:8080/SkiServerRest/liftData/lifts',
+            url: 'http://127.0.0.1:8000/rest/LiftData/lifts',
             headers: {
                 Accept: "text/json; charset=utf-8"
             },
@@ -51,7 +51,7 @@
                 catch (err) {
                     console.log("No lift has been selected yet.")
                 }
-                setTimeout(update_lift_data, 2000000)
+                setTimeout(update_lift_data, 2000)
             }
         });
     })();
@@ -61,26 +61,35 @@
         var classes = sel.attr('class');
         classes = strClass + ' ' + classes;
         sel.attr('class', classes);
-    }
+    };
 
 
     var refresh_lift_fields = function () {
-        var id = $(selected_lift_html).attr('id');
+        try{
+            var id = $(selected_lift_html).attr('id');
 
-        $("#lift_name").val(lift_data[id]["name"]);
-        $("#lift_type").val(lift_data[id]["type"]);
-        $("#lift_queue").val(lift_data[id]["customers"]);
-        $("#lift_consumption").val(lift_data[id]["consumption"]);
-        $("#lift_resource").val(lift_data[id]["resource"]);
-        if (lift_data[id]["running"])
-            $("#on-off-button").removeClass("btn-danger").addClass("btn-success");
-        else
-            $("#on-off-button").removeClass("btn-success").addClass("btn-danger");
-
+            $("#lift_name").val(lift_data[id]["name"]);
+            $("#lift_type").val(lift_data[id]["type"]);
+            $("#lift_queue").val(lift_data[id]["customers"]);
+            $("#lift_speed").val(lift_data[id]["speed"]);
+            $("#lift_consumption").val(lift_data[id]["consumption"]);
+            $("#lift_resource").val(lift_data[id]["resource"]);
+            if (lift_data[id]["running"]) {
+                $("#on-off-button").removeClass("btn-danger").addClass("btn-success");
+                $("#on-off-button")[0].value = "Stop lift"
+            }
+            else {
+                $("#on-off-button").removeClass("btn-success").addClass("btn-danger");
+                $("#on-off-button")[0].value = "Start lift"
+            }
+        }
+        catch (err){
+            console.log(err)
+        }
         var circles = $(".circle");
         for (i = 0; i < circles.length; i++) {
-            var id = $(circles[i]).attr("id");
-            if (lift_data[id]["running"])
+            var circ_id = $(circles[i]).attr("id").split("_")[0];
+            if (lift_data[circ_id]["running"])
                 $(circles[i]).removeClass("circle_off").addClass("circle_on");
             else
                 $(circles[i]).removeClass("circle_on").addClass("circle_off");
@@ -161,14 +170,16 @@
 
     <div class="container-fluid">
         <div class="navbar-header" style="display: inline-block; float: none;vertical-align: top;">
-            <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Best Ski Resort EU</h1>
+            <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mártaszentistván Ski Resort</h1>
         </div>
         <div class="navbar-right">
-            <form class="form-group" method="post" action="URL">
-            <input type="text" class="form-control" id="login_username" name="username" placeholder="Username" style="height: 30px; ">
-            <input type="password" class="form-control" id="login_password" name="password" placeholder="Password" style="height: 30px;">
-            <button type="submit" class="btn btn-default" id="login_button"  > <span class="glyphicon glyphicon-log-in"></span></button>
-        </form>
+            <form class="form-group" id="login_form" method="post" action="/post">
+                <input type="text" class="form-control" id="login_username" name="username" placeholder="Username"
+                       style="height: 30px; ">
+                <input type="password" class="form-control" id="login_password" name="password" placeholder="Password"
+                       style="height: 30px;">
+                <button type="submit" form="login_form" class="btn btn-default" id="login_button"><span class="glyphicon glyphicon-log-in"></span></button>
+            </form>
         </div>
     </div>
 </nav>
@@ -207,6 +218,8 @@
             <input type="text" class="form-control" id="lift_type" readonly>
             <label for="lift_queue">Queue:</label>
             <input type="text" class="form-control" id="lift_queue" readonly>
+            <label for="lift_speed">Speed:</label>
+            <input type="text" class="form-control" id="lift_speed" readonly>
             <label for="lift_consumption">Consumption:</label>
             <input type="text" class="form-control" id="lift_consumption" readonly>
             <label for="lift_resource">Available resource:</label>
@@ -220,17 +233,17 @@
             <label for="lift_resource_change">Change available resources:</label>
             <input type="text" class="form-control" id="lift_resource_change">
             </br>
-            <input type="button" class="btn btn-default " id="form_send_button" value="Send" onclick="send_command()">
-            <input type="button" id="on-off-button" class="btn btn-danger text-right" value="Lift offline"
+            <input type="button" class="btn btn-default " id="form_send_button" value="Send" disabled="True" onclick="send_command()">
+            <input type="button" id="on-off-button" class="btn btn-danger text-right" value="Start Lift"
                    onclick="send_on_off(this)">
         </div>
     </div>
     <div class="col-md-8">
 
         <div style="z-index: 1; position: relative;">
-            <img src="siterkep_day.jpg" height="600px">
-            <!--                <img src="{{url_for('static',filename='siterkep_day.jpg')}}" -->
-            <!--                    height="600px"> -->
+            <!--<img src="siterkep_day.jpg" height="600px">-->
+                            <img src="{{url_for('static',filename='siterkep_day.jpg')}}"
+                                height="600px">
         </div>
 
 
@@ -255,7 +268,7 @@
             <div class="lift_name" id="normal_lift_name">
                 <center>Középhaladó lift</center>
             </div>
-            <div class="circle_off circle" id="normal_lift"></div>
+            <div class="circle_off circle" id="medium_lift"></div>
         </div>
 
         <div id="large"
@@ -267,7 +280,7 @@
             <div class="lift_name" id="big_lift_name">
                 <center>Haladó lift</center>
             </div>
-            <div class="circle_off circle" id="big_lift"></div>
+            <div class="circle_off circle" id="large_lift"></div>
         </div>
 
     </div>
