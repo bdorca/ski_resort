@@ -94,7 +94,8 @@ public class LiftRest {
 	@Path("command/{id}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response sendCommand(@PathParam("id") String id, @QueryParam("command") String command,
-			@QueryParam("arg") int arg, @CookieParam("token") String token) {
+			@QueryParam("arg") int arg, @CookieParam("token") Cookie token) {
+//		System.out.println(token.getName());
 		if (token!=null) {
 			try {
 				Command cmd = Command.valueOf(command);
@@ -118,12 +119,12 @@ public class LiftRest {
 	public Response login(@FormParam("username")String username,@FormParam("password")String password) throws LoginException {
 		try {
 			String authToken = authenticator.login(username, password);
-			return Response.seeOther(UriBuilder.fromPath("../").build())
+			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8080/SkiServerRest/").build())
 		               .cookie(new NewCookie("token", authToken))
 		               .build();
 
 		} catch (final LoginException ex) {
-			return Response.seeOther(UriBuilder.fromPath("../").build()).build();
+			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8080/SkiServerRest/").build()).build();
 		}
 	}
 	
