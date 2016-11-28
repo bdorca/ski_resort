@@ -62,3 +62,6 @@ local.properties
 
 # Code Recommenders
 .recommenders/
+deploy/
+server_source/
+ski_resort.zip
