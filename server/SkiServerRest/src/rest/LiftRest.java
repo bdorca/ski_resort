@@ -81,9 +81,10 @@ public class LiftRest {
 	@POST
 	@Path("lifts")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public void setLift(LiftModel lift) {
+	public Response setLift(LiftModel lift) {
 		try {
 			liftHolder.setLift(lift);
+			return Response.ok().build();
 		} catch (LiftException e) {
 			e.printStackTrace();
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -96,14 +97,14 @@ public class LiftRest {
 	public Response sendCommand(@PathParam("id") String id, @QueryParam("command") String command,
 			@QueryParam("arg") int arg, @CookieParam("token") Cookie token) {
 //		System.out.println(token.getName());
-		if (token!=null) {
+		if (token!=null && authenticator.isAuthTokenValid(token.getValue())) {
 			try {
 				Command cmd = Command.valueOf(command);
 				liftHolder.sendCommand(id, cmd, arg);
 			} catch (IllegalArgumentException e) {
-				throw new WebApplicationException(Response.Status.NOT_ACCEPTABLE);
+				throw new WebApplicationException(Response.Status.NOT_FOUND);
 			} catch (LiftException e) {
-				throw new WebApplicationException(Response.Status.NOT_ACCEPTABLE);
+				throw new WebApplicationException(Response.Status.NOT_FOUND);
 			}
 			return Response.ok(token).build();
 		}
@@ -130,7 +131,7 @@ public class LiftRest {
 	
 	@GET
 	@Path("/logout")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
 	public Response logout(@CookieParam("token") Cookie cookie) {
 	    if (cookie != null) {
 	        NewCookie newCookie = new NewCookie(cookie, "", 0, false);
