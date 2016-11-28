@@ -131,7 +131,7 @@
 
         lift_id = $(selected_lift_html).attr("id");
         if (typeof lift_id === undefined) {
-            alert("No lift has been selected!");
+            $("#alert-placeholder")[0].innerHTML += '<div class="alert alert-danger"><a class="close" onclick="clear_alert()">×</a><span> No lift has been selected!</span></div>'
             return
         }
 
@@ -148,6 +148,7 @@
             else
                 $.get(commandString + lift_data[lift_id]["id"] + "?command=decreased_pop&arg=" + traffic_change)
         }
+        command_alert();
 
 
     };
@@ -184,7 +185,6 @@
 <!--style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">-->
 <!--<h1>Best Ski Resort EU</h1>-->
 <!--</div>-->
-<button onclick="command_alert()">Asd</button>
 <nav class="navbar text-center"
      style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
 
@@ -204,10 +204,14 @@
         </div>
     </div>
 </nav>
-
-<div id="alert-placeholder" >
+<div class="row">
+    <div class="col-sm-2" >
+    </div>
+    <div class="col-sm-8" id="alert-placeholder" >
+    </div>
+    <div class="col-sm-2" >
+    </div>
 </div>
-
 
 <div class="row">
     <div class="col-sm-1" style="margin-left: 20px">
