@@ -37,7 +37,7 @@
 
     (function update_lift_data() {
         $.ajax({
-            url: 'http://127.0.0.1:8080/SkiServerRest/rest/liftData/lifts',
+            url: 'https://127.0.0.1:8443/SkiServerRest/rest/liftData/lifts',
             headers: {
                 Accept: "application/json; charset=utf-8"
             },
@@ -151,7 +151,22 @@
 
 
     };
-    var commandString = "http://127.0.0.1:8080/SkiServerRest/rest/liftData/command/"
+    var commandString = "https://127.0.0.1:8443/SkiServerRest/rest/liftData/command/"
+
+    var command_alert = function () {
+        var message="";
+        var auth = document.cookie.split(";").find(function (x) {
+            return x.split("=")[0] === "token";
+        });
+        if(auth)
+            $("#alert-placeholder")[0].innerHTML += '<div class="alert alert-success"><a class="close" onclick="clear_alert()">×</a><span> Command sent.</span></div>'
+        else
+            $("#alert-placeholder")[0].innerHTML += '<div class="alert alert-danger"><a class="close" onclick="clear_alert()">×</a><span>Please login to send commands!</span></div>'
+    }
+
+    var clear_alert = function () {
+        $("#alert-placeholder")[0].innerHTML = "";
+    }
 
     var send_on_off = function (x) {
         var lift_id = $(selected_lift_html).attr("id");
@@ -162,13 +177,14 @@
     }
 
     var logout=function(){
-		$.get("http://127.0.0.1:8080/SkiServerRest/rest/liftData/logout")
+		$.get("https://127.0.0.1:8443/SkiServerRest/rest/liftData/logout")
     }
 </script>
 <!--<div class="jumbotron text-center"-->
 <!--style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">-->
 <!--<h1>Best Ski Resort EU</h1>-->
 <!--</div>-->
+<button onclick="command_alert()">Asd</button>
 <nav class="navbar text-center"
      style="padding-top: 10px; padding-bottom: 10px; background-color: #37c7ff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);">
 
@@ -189,25 +205,7 @@
     </div>
 </nav>
 
-<!-- Modal -->
-<div id="myModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Modal Header</h4>
-            </div>
-            <div class="modal-body">
-                <p>Some text in the modal.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-
-    </div>
+<div id="alert-placeholder" >
 </div>
 
 

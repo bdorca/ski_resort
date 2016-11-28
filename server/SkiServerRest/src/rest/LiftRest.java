@@ -106,9 +106,9 @@ public class LiftRest {
 			} catch (LiftException e) {
 				throw new WebApplicationException(Response.Status.NOT_FOUND);
 			}
-			return Response.ok(token).build();
+			return Response.ok(token.getValue()).build();
 		}
-		throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 	
 	@Context HttpServletRequest request;
@@ -120,12 +120,12 @@ public class LiftRest {
 	public Response login(@FormParam("username")String username,@FormParam("password")String password) throws LoginException {
 		try {
 			String authToken = authenticator.login(username, password);
-			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8080/SkiServerRest/").build())
+			return Response.seeOther(UriBuilder.fromPath("https://127.0.0.1:8443/SkiServerRest/").build())
 		               .cookie(new NewCookie("token", authToken))
 		               .build();
 
 		} catch (final LoginException ex) {
-			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8080/SkiServerRest/").build()).build();
+			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8443/SkiServerRest/").build()).build();
 		}
 	}
 	
