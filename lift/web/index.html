@@ -18,10 +18,10 @@
 
     <!-- Latest compiled and minified JavaScript -->
 
-    <!--<link rel="stylesheet" type="text/css"-->
-          <!--href="style.css">-->
+    <link rel="stylesheet" type="text/css"
+          href="style.css">
 
-    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}"></link>
+<!--     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}"></link> -->
 </head>
 <body>
 <script type="text/javascript">
@@ -37,12 +37,12 @@
 
     (function update_lift_data() {
         $.ajax({
-            url: 'http://127.0.0.1:8000/rest/LiftData/lifts',
+            url: 'http://127.0.0.1:8080/SkiServerRest/rest/liftData/lifts',
             headers: {
-                Accept: "text/json; charset=utf-8"
+                Accept: "application/json; charset=utf-8"
             },
             success: function (data) {
-                lift_data = (JSON).parse(data);
+                lift_data = data.lifts;
             },
             complete: function () {
                 try {
@@ -89,7 +89,7 @@
         var circles = $(".circle");
         for (i = 0; i < circles.length; i++) {
             var circ_id = $(circles[i]).attr("id").split("_")[0];
-            if (lift_data[circ_id]["running"])
+            if (lift_data[circ_id].running)
                 $(circles[i]).removeClass("circle_off").addClass("circle_on");
             else
                 $(circles[i]).removeClass("circle_on").addClass("circle_off");
@@ -135,7 +135,6 @@
             return
         }
 
-        var commandString = "http://localhost:8080/SkiServerRest/liftData/command/"
         if ((typeof queue_change !== undefined) && (parseFloat(queue_change) !== 0) && !(isNaN(parseFloat(queue_change)))) {
             console.log(parseFloat(queue_change))
             $.get(commandString + lift_data[lift_id]["id"] + "?command=customer&arg=" + queue_change)
@@ -152,13 +151,18 @@
 
 
     };
+    var commandString = "http://127.0.0.1:8080/SkiServerRest/rest/liftData/command/"
 
     var send_on_off = function (x) {
-        if ($(x).classList.contains("btn-danger"))
+        var lift_id = $(selected_lift_html).attr("id");
+    	if ($(x)[0].classList.contains("btn-danger"))
             $.get(commandString + lift_data[lift_id]["id"] + "?command=online")
         else
             $.get(commandString + lift_data[lift_id]["id"] + "?command=offline")
+    }
 
+    var logout=function(){
+		$.get("http://127.0.0.1:8080/SkiServerRest/rest/liftData/logout")
     }
 </script>
 <!--<div class="jumbotron text-center"-->
@@ -173,13 +177,14 @@
             <h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mártaszentistván Ski Resort</h1>
         </div>
         <div class="navbar-right">
-            <form class="form-group" id="login_form" method="post" action="/post">
+            <form class="form-group" id="login_form" method="post" action="https://127.0.0.1:8443/SkiServerRest/rest/liftData/login">
                 <input type="text" class="form-control" id="login_username" name="username" placeholder="Username"
                        style="height: 30px; ">
                 <input type="password" class="form-control" id="login_password" name="password" placeholder="Password"
                        style="height: 30px;">
                 <button type="submit" form="login_form" class="btn btn-default" id="login_button"><span class="glyphicon glyphicon-log-in"></span></button>
             </form>
+            <input type="button" class="btn btn_default" value="logout" onclick="logout()"/>
         </div>
     </div>
 </nav>
@@ -233,7 +238,7 @@
             <label for="lift_resource_change">Change available resources:</label>
             <input type="text" class="form-control" id="lift_resource_change">
             </br>
-            <input type="button" class="btn btn-default " id="form_send_button" value="Send" disabled="True" onclick="send_command()">
+            <input type="button" class="btn btn-default " id="form_send_button" value="Send" onclick="send_command()">
             <input type="button" id="on-off-button" class="btn btn-danger text-right" value="Start Lift"
                    onclick="send_on_off(this)">
         </div>
@@ -241,10 +246,10 @@
     <div class="col-md-8">
 
         <div style="z-index: 1; position: relative;">
-            <!--<img src="siterkep_day.jpg" height="600px">-->
-                            <img src="{{url_for('static',filename='siterkep_day.jpg')}}"
-                                height="600px">
-        </div>
+            <img src="siterkep_day.jpg" height="600px">
+				<!--                             <img src="{{url_for('static',filename='siterkep_day.jpg')}}" -->
+				<!--                                 height="600px"> -->
+			</div>
 
 
         <div id="small"
