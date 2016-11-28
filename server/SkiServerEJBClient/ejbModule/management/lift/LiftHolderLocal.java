@@ -17,4 +17,5 @@ public interface LiftHolderLocal {
 	void sendCommand(String liftId, Command cmd, float arg) throws LiftException;
 	void sendCommand(String liftId, Command name, String arg) throws LiftException;
 	void setLiftData(String liftId, String name, LiftType type);
+	void removeLift(String liftId);
 }

@@ -5,7 +5,11 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.security.auth.login.LoginException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -14,8 +18,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import exception.LiftException;
@@ -24,7 +31,6 @@ import management.lift.LiftHolderLocal;
 import management.lift.LiftModel;
 import management.lift.ListOfLifts;
 import user.UserAuthenticateLocal;
-import user.UserDataModel;
 
 @Path("liftData")
 @Stateless
@@ -54,7 +60,7 @@ public class LiftRest {
 			lm = liftHolder.getLift(id);
 			return lm;
 		} catch (LiftException e) {
-			throw new WebApplicationException(Response.Status.NO_CONTENT);
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
 	}
 
@@ -68,7 +74,7 @@ public class LiftRest {
 			return new ListOfLifts(lm);
 		} catch (LiftException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(Response.Status.NO_CONTENT);
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
 	}
 
@@ -80,7 +86,7 @@ public class LiftRest {
 			liftHolder.setLift(lift);
 		} catch (LiftException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(Response.Status.NOT_ACCEPTABLE);
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
 	}
 
@@ -88,8 +94,8 @@ public class LiftRest {
 	@Path("command/{id}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response sendCommand(@PathParam("id") String id, @QueryParam("command") String command,
-			@QueryParam("arg") int arg, @QueryParam("token") String token) {
-		if (authenticator.isAuthTokenValid(token)) {
+			@QueryParam("arg") int arg, @CookieParam("token") String token) {
+		if (token!=null) {
 			try {
 				Command cmd = Command.valueOf(command);
 				liftHolder.sendCommand(id, cmd, arg);
@@ -98,24 +104,37 @@ public class LiftRest {
 			} catch (LiftException e) {
 				throw new WebApplicationException(Response.Status.NOT_ACCEPTABLE);
 			}
-			return Response.ok().build();
+			return Response.ok(token).build();
 		}
 		throw new WebApplicationException(Response.Status.UNAUTHORIZED);
 	}
-
+	
+	@Context HttpServletRequest request;
+	
 	@POST
 	@Path("login")
-	@Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
-	public Response login(UserDataModel userData) throws LoginException {
+	@Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,MediaType.APPLICATION_FORM_URLENCODED})
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,MediaType.APPLICATION_FORM_URLENCODED})
+	public Response login(@FormParam("username")String username,@FormParam("password")String password) throws LoginException {
 		try {
-			String authToken = authenticator.login(userData.getUserName(), userData.getPassword());
-
-			return Response.ok("{authToken:" + authToken + "}").build();
+			String authToken = authenticator.login(username, password);
+			return Response.seeOther(UriBuilder.fromPath("../").build())
+		               .cookie(new NewCookie("token", authToken))
+		               .build();
 
 		} catch (final LoginException ex) {
-			throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+			return Response.seeOther(UriBuilder.fromPath("../").build()).build();
 		}
 	}
-
+	
+	@GET
+	@Path("/logout")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response logout(@CookieParam("token") Cookie cookie) {
+	    if (cookie != null) {
+	        NewCookie newCookie = new NewCookie(cookie, "", 0, false);
+	        return Response.ok("OK").cookie(newCookie).build();
+	    }
+	    return Response.ok("OK - No session").build();
+	}
 }

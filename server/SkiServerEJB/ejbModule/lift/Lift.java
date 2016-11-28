@@ -42,9 +42,9 @@ public class Lift {
 	private float consumption;
 	private float failure;
 	private float add_people;
+	private boolean running;
 	@ManyToOne()
 	private LiftValue values;
-	private int running;
 	
 	public Lift() {
 
@@ -71,7 +71,7 @@ public class Lift {
 		consumption=consumption2;
 		failure=events.getFailure();
 		add_people=events.getAdd_people();
-		this.running=running?1:0;
+		this.running=running;
 	}
 
 	public float getConsumption() {
@@ -151,7 +151,7 @@ public class Lift {
 		consumption=consumption2;
 		failure=events.getFailure();
 		add_people=events.getAdd_people();
-		this.running=running?1:0;
+		this.running=running;
 	}
 
 	public LiftValue getValues() {
@@ -163,7 +163,7 @@ public class Lift {
 	}
 
 	public boolean getRunning() {
-		return running==1?true:false;
+		return running;
 	}
 
 }

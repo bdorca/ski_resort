@@ -63,13 +63,12 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 
 	@PostConstruct
 	public void postContr() {
-		if(executor==null)
+		if (executor == null)
 			executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleAtFixedRate(reportTask, 0, 5, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(reportTask, 0, 30, TimeUnit.SECONDS);
 	}
 
 	Runnable reportTask = new Runnable() {
-
 		@Override
 		public void run() {
 			for (Entry<Session, String> e : availableSessions.entrySet()) {
@@ -83,14 +82,16 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 		String liftId = UUID.randomUUID().toString();
 		availableSessions.put(session, liftId);
 		liftHolder.addNewLift(liftId);
-		 sendCommandToLiftId(liftId, Command.id, liftId);
+		sendCommandToLiftId(liftId, Command.id, liftId);
 		sendCommandToLiftId(liftId, Command.report, "");
 		System.out.println("new session, lift: " + liftId);
 	}
 
 	@OnClose
 	public void onClose(Session session) {
-		System.out.println("session removed: " + availableSessions.remove(session));
+		String liftId = availableSessions.remove(session);
+		System.out.println("session removed: " + liftId);
+		liftHolder.removeLift(liftId);
 	}
 
 	@OnError
@@ -101,7 +102,7 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	@OnMessage
 	public void onMessage(Session session, String message) {
 		String liftId = availableSessions.get(session);
-//		System.out.println("message: " + message + " , lift: " + liftId);
+		// System.out.println("message: " + message + " , lift: " + liftId);
 		JsonObject jObject = null;
 		String messageType = null;
 		try {
@@ -114,13 +115,13 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 			sendMessageToSession(session, "The message does not contain a 'type' field.");
 			return;
 		}
-		JsonObject jo=jObject.getJsonObject("data");
+		JsonObject jo = jObject.getJsonObject("data");
 		switch (messageType) {
 		case "report":
 			addNewLift(liftId, jo);
 			break;
 		case "add":
-			addNewLift(liftId,jo.getString("name"),LiftType.valueOf(jo.getString("type")));
+			addNewLift(liftId, jo.getString("name"), LiftType.valueOf(jo.getString("type")));
 		default:
 			sendMessageToSession(session, "Unexpected operation: " + messageType);
 			break;
@@ -129,8 +130,8 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	}
 
 	private void addNewLift(String liftId, String name, LiftType type) {
-		liftHolder.setLiftData(liftId, name,type);
-		
+		liftHolder.setLiftData(liftId, name, type);
+
 	}
 
 	private void addNewLift(String liftId, JsonObject data) {
@@ -144,10 +145,10 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 			float resource = (float) (data.getJsonNumber("resource")).doubleValue();
 			float consumption = (float) (data.getJsonNumber("speed")).doubleValue();
 			JsonObject eventsObject = data.getJsonObject("events");
-			boolean running=data.getBoolean("running");
+			boolean running = data.getBoolean("running");
 			Events events = new Events((float) eventsObject.getJsonNumber("failure").doubleValue(),
 					(float) eventsObject.getJsonNumber("add_people").doubleValue());
-			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events,running);
+			LiftModel l = new LiftModel(liftId, name, size, speed, customers, resource, consumption, events, running);
 			liftHolder.setLiftData(liftId, l);
 		} catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
 			e.printStackTrace();
@@ -156,7 +157,7 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	}
 
 	public void sendMessageToId(String id, String msg) {
-//		System.out.println("sendTo "+ id+": "+msg);
+		// System.out.println("sendTo "+ id+": "+msg);
 		sendMessageToSession(getSessionbyId(id), msg);
 	}
 

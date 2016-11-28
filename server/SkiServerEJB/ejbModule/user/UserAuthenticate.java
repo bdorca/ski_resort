@@ -7,8 +7,12 @@ import java.util.UUID;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.NoResultException;
 import javax.security.auth.login.LoginException;
+
+import management.lift.LiftHolderLocal;
 
 /**
  * Session Bean implementation class UserAuthenticate
@@ -22,16 +26,12 @@ public class UserAuthenticate implements UserAuthenticateLocal {
 	UserFacade userFacade;
 
 	private UserAuthenticate() {
-		// The usersStorage pretty much represents a user table in the database
+		InitialContext ic;
 		try {
-			userFacade.find("username1");
-		} catch (NoResultException e) {
-			userFacade.create(new UserData("username1", "passwordForUser1"));
-			try {
-				userFacade.find("username2");
-			} catch (NoResultException e1) {
-				userFacade.create(new UserData("username2", "passwordForUser2"));
-			}
+			ic = new InitialContext();
+			userFacade = (UserFacade) (ic.lookup("java:global/SkiServer/SkiServerEJB/UserFacade!user.UserFacade"));
+		} catch (NamingException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -40,19 +40,22 @@ public class UserAuthenticate implements UserAuthenticateLocal {
 		String passwordMatch = "";
 		try {
 			UserData ud = userFacade.find(username);
-			passwordMatch = ud.getPassword();
-			if (passwordMatch.equals(password)) {
+			if (ud != null) {
+				passwordMatch = ud.getPassword();
+				if (passwordMatch.equals(password)) {
 
-				/**
-				 * Once all params are matched, the authToken will be generated
-				 * and will be stored in the authorizationTokensStorage. The
-				 * authToken will be needed for every REST API invocation and is
-				 * only valid within the login session
-				 */
-				String authToken = UUID.randomUUID().toString();
-				ud.setToken(authToken);
+					/**
+					 * Once all params are matched, the authToken will be
+					 * generated and will be stored in the
+					 * authorizationTokensStorage. The authToken will be needed
+					 * for every REST API invocation and is only valid within
+					 * the login session
+					 */
+					String authToken = UUID.randomUUID().toString();
+					ud.setToken(authToken);
 
-				return authToken;
+					return authToken;
+				}
 			}
 		} catch (NoResultException e) {
 			e.printStackTrace();

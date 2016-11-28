@@ -42,7 +42,6 @@ public class LiftHolder implements LiftHolderLocal {
 			socket = (CommunicatorSocketLocal) (ic
 					.lookup("java:global/SkiServer/SkiServerWeb/CommunicatorSocket!websocket.CommunicatorSocketLocal"));
 		} catch (NamingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -155,6 +154,14 @@ public class LiftHolder implements LiftHolderLocal {
 			} catch (LiftException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	@Override
+	public void removeLift(String liftId) {
+		Lift l = liftFacade.findLiftByLiftId(liftId);
+		if (l != null) {
+			liftFacade.remove(l);
 		}
 	}	
 }
