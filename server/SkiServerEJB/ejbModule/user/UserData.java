@@ -11,6 +11,9 @@ public class UserData {
 	private String username;
 	private String password;
 	private String token;
+	
+	
+	private long validUntil;
 	UserData(){}
 	
 	UserData(String username, String password){
@@ -30,6 +33,14 @@ public class UserData {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public long getValidUntil() {
+		return validUntil;
+	}
+
+	public void setValidUntil(long validUntil) {
+		this.validUntil = validUntil;
 	}
 	
 	

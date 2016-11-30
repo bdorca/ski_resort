@@ -184,6 +184,9 @@ public class CommunicatorSocket implements CommunicatorSocketLocal {
 	@Override
 	public void sendCommandToLiftId(String liftId, Command command, String argument) {
 		JsonObject jo = Json.createObjectBuilder().add("command", command.toString()).add("arg", argument).build();
+		if(command!=Command.report){
+			System.out.println(command+" "+argument);
+		}
 		sendMessageToId(liftId, jo.toString());
 	}
 }

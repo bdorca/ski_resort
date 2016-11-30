@@ -53,7 +53,7 @@ public class UserAuthenticate implements UserAuthenticateLocal {
 					 */
 					String authToken = UUID.randomUUID().toString();
 					ud.setToken(authToken);
-
+					ud.setValidUntil(System.currentTimeMillis()+300*1000);
 					return authToken;
 				}
 			}
@@ -77,7 +77,7 @@ public class UserAuthenticate implements UserAuthenticateLocal {
 	public boolean isAuthTokenValid(String authToken) {
 		List<UserData> list = userFacade.findAll();
 		for (UserData ud : list) {
-			if (authToken.equals(ud.getToken())) {
+			if (authToken.equals(ud.getToken())&&System.currentTimeMillis()<=ud.getValidUntil()) {
 				return true;
 			}
 		}
