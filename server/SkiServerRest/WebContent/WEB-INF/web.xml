@@ -18,9 +18,9 @@
 			<url-pattern>/rest/liftData/login/*</url-pattern>
 			<http-method>POST</http-method>
 		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
+<!-- 		<user-data-constraint> -->
+<!-- 			<transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
+<!-- 		</user-data-constraint> -->
 	</security-constraint>
 
 </web-app>

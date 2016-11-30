@@ -6,7 +6,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.FormParam;
@@ -17,11 +16,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -67,16 +69,25 @@ public class LiftRest {
 	@GET
 	@Path("lifts")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public ListOfLifts getLifts() {
+	public Response getLifts() {
 		List<LiftModel> lm;
 		try {
 			lm = liftHolder.getLifts();
-			return new ListOfLifts(lm);
+			return getNoCacheResponseBuilder( Response.Status.OK ).entity( new ListOfLifts(lm) ).build();
 		} catch (LiftException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(Response.Status.NOT_FOUND);
+			return Response.status(Response.Status.NOT_FOUND).entity("no lifts").build();
 		}
 	}
+	
+    protected ResponseBuilder getNoCacheResponseBuilder( Status status ) {
+        CacheControl cc = new CacheControl();
+        cc.setNoCache( true );
+        cc.setMaxAge( -1 );
+        cc.setMustRevalidate( true );
+ 
+        return Response.status( status ).cacheControl( cc );
+    }
 
 	@POST
 	@Path("lifts")
@@ -120,12 +131,11 @@ public class LiftRest {
 	public Response login(@FormParam("username")String username,@FormParam("password")String password) throws LoginException {
 		try {
 			String authToken = authenticator.login(username, password);
-			return Response.seeOther(UriBuilder.fromPath("https://127.0.0.1:8443/SkiServerRest/").build())
-		               .cookie(new NewCookie("token", authToken))
-		               .build();
+			NewCookie cookie=new NewCookie("token", authToken,"/","","comment",10000, false);
+			return Response.status(Status.SEE_OTHER).location(UriBuilder.fromPath("../").build()).cookie(cookie).build();
 
 		} catch (final LoginException ex) {
-			return Response.seeOther(UriBuilder.fromPath("http://127.0.0.1:8443/SkiServerRest/").build()).build();
+			return Response.status(Status.SEE_OTHER).location(UriBuilder.fromPath("../").build()).build();
 		}
 	}
 	

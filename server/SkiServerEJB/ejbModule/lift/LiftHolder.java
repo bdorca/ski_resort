@@ -100,7 +100,7 @@ public class LiftHolder implements LiftHolderLocal {
 			l.setData(lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),lift.isRunning());
 		}
 		
-		if(l.getValues()==null){
+		if(l.getValues()==null || l.getResource()<=0.001){
 			l.setValues(liftValueFacade.find(l.getType()));
 			String name=l.getValues().getName();
 			float initResource=l.getValues().getInitResource();
