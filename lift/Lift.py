@@ -95,6 +95,7 @@ class Lift:
                 self.websocket_handler.exit = True
             elif c == "resource":
                 self.resource = float(arg)
+                self.find_highest_available_speed()
             elif c == "increased_pop":
                 self.event_rate["add_people"] += float(arg)
             elif c == "decreased_pop":
@@ -147,6 +148,12 @@ class Lift:
         for i in range(self.speed + 1):
             if self.calculate_consumption(self.speed - i, self.type) <= self.resource:
                 self.change_speed(self.speed - i)
+                break
+
+    def find_highest_available_speed(self):
+        for i in range(self.MAX_SPEED[self.type]+1):
+            if self.calculate_consumption(self.MAX_SPEED[self.type] - i, self.type) <= self.resource:
+                self.change_speed(self.MAX_SPEED[self.type] - i)
                 break
 
     def enviromental_happening(self):
