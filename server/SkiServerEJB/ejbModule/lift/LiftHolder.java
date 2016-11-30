@@ -97,7 +97,7 @@ public class LiftHolder implements LiftHolderLocal {
 			l=toLift(lift);
 			liftFacade.create(l);
 		} else {
-			l.setData(lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),l.getRunning());
+			l.setData(lift.getName(), lift.getType(),lift.getSpeed(),lift.getCustomers(),lift.getResource(),lift.getConsumption(),lift.getEvents(),lift.isRunning());
 		}
 		
 		if(l.getValues()==null){
