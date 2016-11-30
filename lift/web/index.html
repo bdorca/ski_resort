@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" type="text/css" href="style.css">
 
-<!--     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}"></link> -->
+     <!--<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}"></link>-->
 </head>
 <body>
     <script type="text/javascript">
@@ -156,10 +156,10 @@
 
     var command_alert = function () {
         var message="";
-        var auth = document.cookie.split(";").find(function (x) {
+        var auth = document.cookie.split(";").filter(function (x) {
             return x.split("=")[0] === "token";
         });
-        if(auth)
+        if(auth.length > 0)
             $("#alert-placeholder")[0].innerHTML += '<div class="alert alert-success"><a class="close" onclick="clear_alert()">×</a><span> Command sent.</span></div>'
         else
             $("#alert-placeholder")[0].innerHTML += '<div class="alert alert-danger"><a class="close" onclick="clear_alert()">×</a><span>Please login to send commands!</span></div>'
@@ -254,8 +254,8 @@
 
             <div style="z-index: 1; position: relative;">
                 <img src="siterkep_day.jpg" height="600px">
-                <!--                             <img src="{{url_for('static',filename='siterkep_day.jpg')}}" -->
-                <!--                                 height="600px"> -->
+                                             <!--<img src="{{url_for('static',filename='siterkep_day.jpg')}}"-->
+                                                 <!--height="600px">-->
             </div>
 
 
