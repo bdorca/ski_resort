@@ -25,18 +25,19 @@ class Lift:
                  LiftType.extra_large: 120
                  }
 
-    def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, consumption=0, url=""):
+    def __init__(self, type, my_id="", name="", queue=0, speed=0, resource=0, url=""):
         self.input = multiprocessing.Queue()
         self.output = multiprocessing.Queue()
         self.id = my_id
         self.name = name
         self.queue = queue
-        self.speed = speed  # People/min
+        self.type = type
+        speed = abs(speed)
+        self.speed = speed if speed < self.MAX_SPEED[self.type] else self.MAX_SPEED[self.type] # People/min
         self.current_transition = 0
         self.resource = resource  # Fixed amount that the system can provide
-        self.consumption = consumption  # Fixed amount, that the lift requires to maintain speed
+        self.consumption = self.calculate_consumption(self.speed,self.type)  # Fixed amount, that the lift requires to maintain speed
         self.last_sim_time = 0
-        self.type = type
         self.event_rate = {
             "failure": 0.01,
             "add_people": 1.5
@@ -87,7 +88,7 @@ class Lift:
             elif c == "change_speed":
                 self.change_speed(float(arg), False)
             elif c == "customer":
-                self.add_people(int(arg))
+                self.add_people(int(float(arg)))
             elif c == "report":
                 self.output.put(self.create_report())
             elif c == "exit":
@@ -159,7 +160,6 @@ class Lift:
     def enviromental_happening(self):
 
         l = []
-        denom = 1.0 / min(self.event_rate.values())
         total = sum(self.event_rate.values())
         for key in self.event_rate:
             l += [key] * int(self.event_rate[key] * 20)
@@ -197,13 +197,14 @@ class Lift:
             asyncio.get_event_loop().run_until_complete(self.handler())
 
         async def handler(self):
-            while not self.exit:
+            c = ""
+            while not c == "exit" and not self.exit:
                 try:
                     async with websockets.connect("ws://{}".format(self.url)) as websocket:
-
                         data = await websocket.recv()
                         command = json.loads(data)
-                        while not command["command"] == "close" and not self.exit:
+                        c = command["command"]
+                        while not c == "exit" and not self.exit:
                             self.input.put(command)
                             if command["command"] == "report":
                                 # while self.output.empty():
@@ -211,6 +212,7 @@ class Lift:
                                 await websocket.send(self.output.get())
                             data = await websocket.recv()
                             command = json.loads(data)
+                            c = command["command"]
 
                 except Exception as e:
                     logging.error("Connection lost to server. Retrying...")
@@ -218,12 +220,14 @@ class Lift:
 
 
 def create_lifts():
-    L1 = Lift(LiftType.small,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    multiprocessing.Process(target=L1.simulation).start()
-    L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    multiprocessing.Process(target=L2.simulation).start()
-    L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
-    multiprocessing.Process(target=L3.simulation).start()
+    L1 = Lift(LiftType.small,resource=0,url="localhost:8080")
+    p = multiprocessing.Process(target=L1.simulation)
+    p.start()
+    p.join()
+    # L2 = Lift(LiftType.medium,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    # multiprocessing.Process(target=L2.simulation).start()
+    # L3 = Lift(LiftType.large,resource=0,url="localhost:8080/SkiServerWeb/lift")
+    # multiprocessing.Process(target=L3.simulation).start()
 
 
 def main():
